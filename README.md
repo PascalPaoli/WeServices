@@ -22,14 +22,8 @@ Suddenly, you have 5 different terminal windows open. One of them crashes. Anoth
 
 ## 🎬 See it in Action
 
-<details>
-  <summary>Click to view the Video Demo</summary>
-  
-  <br>
-  
-  https://github.com/user-attachments/assets/dac219cd-6caf-4ce9-ba70-59e598d0462f
-  
-</details>
+https://github.com/user-attachments/assets/dac219cd-6caf-4ce9-ba70-59e598d0462f
+
 
 ## ✨ Features
 
