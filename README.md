@@ -25,9 +25,10 @@ Suddenly, you have 5 different terminal windows open. One of them crashes. Anoth
 <details>
   <summary>Click to view the Video Demo</summary>
   
-  <video src="./assets/demo.mp4" controls width="100%"></video>
+  <br>
   
-  *(Make sure to place your video file at `assets/demo.mp4`)*
+  ![Video Demo](./assets/demo.mp4)
+  
 </details>
 
 ## ✨ Features
