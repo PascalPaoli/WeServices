@@ -8,7 +8,7 @@
 		"dev": "electrobun dev --watch",
 		"dev:hmr": "concurrently --kill-others \"bun run hmr\" \"bun run start\"",
 		"hmr": "vite --port 5273",
-		"build:canary": "vite build && electrobun build --env=canary"
+		"build:canary": "vite build && bun -e "const fs=require('fs'); fs.writeFileSync('dist/index.html', fs.readFileSync('dist/index.html','utf-8').replace(/ crossorigin/gi,''));" && electrobun build --env=canary"
 	},
 	"dependencies": {
 		"electrobun": "1.16.0"
@@ -20,3 +20,4 @@
 		"vite": "^6.0.3"
 	}
 }
+
