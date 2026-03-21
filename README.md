@@ -33,6 +33,13 @@ https://github.com/user-attachments/assets/dac219cd-6caf-4ce9-ba70-59e598d0462f
 
 ## ✨ Features
 
+- 🚦 **Dedicated Global Controls**: Independent 'Start All' and 'Stop All' buttons to reliably launch or safely terminate all services instantly.
+- 🟠 **Smart LED Watcher**: Real-time global LED that glows green when all systems are operational, red when everything is stopped, and warning orange for mixed states.
+- 🛑 **Anti-Zombie Safe Exit**: Attempts to close the application with active services running will trigger a native OS warning intercept. Quit safely without leaving headless Node/Python processes haunting your RAM!
+- 🎨 **Premium UI & Branding**: Beautiful dark-theme interface with custom double-sized Sidebar Logo and injected Favicon.
+- 🚀 **Bulletproof Build Script**: The `Setup-WeServices.ps1` completely bypasses cross-origin limits, forces UI asset payload injections directly into the standalone `.exe`, and dynamically drops a shortcut for you.
+
+
 - 🧠 **The Launch Vault**: It permanently stores all your exact launch commands, directories, and target ports. No more forgetting how to boot up a specific service.
 - 🟢 **One-Click Start/Stop**: Start or stop individual services, or hit the **Global Play** button to boot up your entire stack at once.
 - 🧟‍♂️ **Force Kill Zombies (Plumber)**: Did a service crash but keep its port open? Click the ⚡ (Zap) icon to magically find and ruthlessly murder the zombie process holding your port hostage.
