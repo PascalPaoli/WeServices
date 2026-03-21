@@ -49,8 +49,20 @@ export type AppRPC = {
 // ... jump to handlers inside defined setup
 // Assuming I need to replace from export interface down to freePort handler... Wait, I will use multiple ReplaceChunks.
 
-const CONFIG_PATH = "F:\\AzWorkspace\\services_config.json";
-const SETTINGS_PATH = "F:\\AzWorkspace\\weservices_settings.json";
+import * as fs from "fs";
+
+const userHome = process.env.USERPROFILE || process.env.HOME || process.cwd();
+const confDir = join(userHome, ".weservices");
+
+if (!fs.existsSync(confDir)) {
+    try { fs.mkdirSync(confDir, { recursive: true }); } catch (e) {}
+}
+
+const oldConfig = "F:\\AzWorkspace\\services_config.json";
+const oldSettings = "F:\\AzWorkspace\\weservices_settings.json";
+
+const CONFIG_PATH = fs.existsSync(oldConfig) ? oldConfig : join(confDir, "services_config.json");
+const SETTINGS_PATH = fs.existsSync(oldSettings) ? oldSettings : join(confDir, "settings.json");
 
 interface AppSettings {
     autoStartServices: boolean;
