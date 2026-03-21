@@ -232,11 +232,25 @@ document.getElementById("btn-submit-add")!.addEventListener("click", async () =>
     }
 });
 
-document.getElementById("btn-global-startstop")?.addEventListener("click", async () => {
-    let allRunning = servicesList.length > 0;
+document.getElementById("btn-global-start")?.addEventListener("click", async () => {
     servicesList.forEach(s => {
-        if (serviceStatuses[s.id] !== "running") allRunning = false;
+        if (serviceStatuses[s.id] !== "running" && serviceStatuses[s.id] !== "starting") {
+            loadingServices[s.id] = true;
+            rpc.request.startService({ id: s.id });
+        }
     });
+    renderServices();
+});
+
+document.getElementById("btn-global-stop")?.addEventListener("click", async () => {
+    servicesList.forEach(s => {
+        if (serviceStatuses[s.id] === "running" || serviceStatuses[s.id] === "starting" || serviceStatuses[s.id] === "error") {
+            loadingServices[s.id] = true;
+            rpc.request.stopService({ id: s.id });
+        }
+    });
+    renderServices();
+});
     
     if (allRunning) {
         // Stop all
