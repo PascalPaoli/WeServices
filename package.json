@@ -1,14 +1,14 @@
 {
   "name": "weservices",
   "version": "1.0.0",
-  "description": "WeServices - The AI Dev's Best Friend",
+  "description": "WeServices",
   "scripts": {
     "start": "electrobun dev",
     "dev:bun": "electrobun dev --watch",
     "dev:vite": "vite",
-    "dev": "concurrently `"bun run dev:vite`" `"bun run dev:bun`"",
+    "dev": "concurrently \"bun run dev:vite\" \"bun run dev:bun\"",
     "hmr": "vite --port 5273",
-    "build:canary": "vite build && bun -e `"const fs=require('fs'); fs.writeFileSync('dist/index.html', fs.readFileSync('dist/index.html','utf8').replace(/ crossorigin/g, ''));`" && electrobun build --env=canary"
+    "build:canary": "vite build && bun -e \"const fs=require('fs'); fs.writeFileSync('dist/index.html', fs.readFileSync('dist/index.html','utf8').replace(/ crossorigin/g, ''));\" && electrobun build --env=canary"
   },
   "dependencies": {
     "electrobun": "^1.16.0"
