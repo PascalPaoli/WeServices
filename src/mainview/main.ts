@@ -82,7 +82,8 @@ app.innerHTML = `
                 <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-end; gap: 8px;">
                     <div style="color: #ffffff; font-size: 1.15rem; font-weight: 600; letter-spacing: 0.3px; margin-right: 2px;">All Services</div>
                     <div class="header-actions" style="display: flex; align-items: center; gap: 2px;">
-                        <button class="btn-xxl-icon" id="btn-global-startstop" title="Start All" style="color: var(--success);">${ICONS.start}</button>
+                        <button class="btn-xxl-icon" id="btn-global-start" title="Start All" style="color: var(--success);">${ICONS.start}</button>
+     <button class="btn-xxl-icon" id="btn-global-stop" title="Stop All" style="color: var(--danger);">${ICONS.stop}</button>
                         <button class="btn-xxl-icon" id="btn-cleanup" title="Force Clean Zombies" style="color: var(--warning);">${ICONS.broom || '🧹'}</button>
                         <div id="global-led" class="led led-red" style="width: 12px; height: 12px; margin-left: 14px;"></div>
                     </div>
@@ -503,30 +504,16 @@ function renderServices() {
     });
 
     const gLed = document.getElementById("global-led");
-    const gBtn = document.getElementById("btn-global-startstop");
-    
-    if (gLed) {
-        gLed.className = "led";
-        if (allRunning) gLed.classList.add("led-green");
-        else if (anyError) gLed.classList.add("led-orange");
-        else if (allStopped) gLed.classList.add("led-red");
-        else gLed.classList.add("led-orange"); // Mixed state
-    }
+    const gStart = document.getElementById("btn-global-start");
+    const gStop = document.getElementById("btn-global-stop");
 
-    if (gBtn) {
-        if (anyLoading) {
-            gBtn.innerHTML = ICONS.spinner;
-            gBtn.style.color = "var(--text-secondary)";
-            gBtn.title = "Processing...";
-        } else if (allRunning) {
-            gBtn.innerHTML = ICONS.stop;
-            gBtn.style.color = "var(--danger)";
-            gBtn.title = "Stop All";
-        } else {
-            gBtn.innerHTML = ICONS.start;
-            gBtn.style.color = "var(--success)";
-            gBtn.title = "Start All";
-        }
+    if (gStart) {
+        gStart.style.opacity = (allRunning || anyLoading) ? "0.3" : "1";
+        gStart.style.pointerEvents = (allRunning || anyLoading) ? "none" : "auto";
+    }
+    if (gStop) {
+        gStop.style.opacity = (allStopped || anyLoading) ? "0.3" : "1";
+        gStop.style.pointerEvents = (allStopped || anyLoading) ? "none" : "auto";
     }
 }
 
