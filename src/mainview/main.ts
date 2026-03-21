@@ -560,9 +560,23 @@ rpc = Electroview.defineRPC<any>({
 
 const electrobun = new Electrobun.Electroview({ rpc });
 
-window.addEventListener("beforeunload", () => {
-    // Tell the backend to kill all managed services instantly!
-    rpc.request.shutdown();
+window.addEventListener("beforeunload", (e) => {
+    let anyRunning = false;
+    for (const id in serviceStatuses) {
+        if (serviceStatuses[id] === "running" || serviceStatuses[id] === "starting") {
+            anyRunning = true;
+            break;
+        }
+    }
+    
+    if (anyRunning) {
+        const msg = "Are you sure you want to quit? Some services are still running and could remain active in the background.";
+        e.preventDefault();
+        e.returnValue = msg;
+        return msg;
+    } else {
+        rpc.request.shutdown();
+    }
 });
 
 // Init
