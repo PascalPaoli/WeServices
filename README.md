@@ -1,4 +1,10 @@
-# 🚀 WeServices (aka "The AI Dev's Best Friend")
+# 🚀 WeServices 
+
+<div align="center">
+  <img src="./assets/logo.png" alt="WeServices Logo" width="150" style="border-radius: 20px; box-shadow: 0 0 20px rgba(0,255,255,0.4);" />
+  <h3>The AI Dev's Best Friend</h3>
+</div>
+
 
 <div align="center">
   <img src="./assets/interface.png" alt="Full Interface Overview" width="800"/>
