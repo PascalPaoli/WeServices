@@ -251,23 +251,7 @@ document.getElementById("btn-global-stop")?.addEventListener("click", async () =
     });
     renderServices();
 });
-    
-    if (allRunning) {
-        // Stop all
-        await Promise.all(servicesList.map(s => {
-            if (serviceStatuses[s.id] === "running") {
-                return rpc.request.stopService({ id: s.id });
-            }
-        }));
-    } else {
-        // Start all stopped
-        await Promise.all(servicesList.map(s => {
-            if (serviceStatuses[s.id] !== "running") {
-                return rpc.request.startService({ id: s.id });
-            }
-        }));
-    }
-});
+// Dead logic removed
 
 document.getElementById("btn-cleanup")?.addEventListener("click", async () => {
     const btn = document.getElementById("btn-cleanup") as HTMLButtonElement;
@@ -520,6 +504,14 @@ function renderServices() {
     const gLed = document.getElementById("global-led");
     const gStart = document.getElementById("btn-global-start");
     const gStop = document.getElementById("btn-global-stop");
+
+    if (gLed) {
+        gLed.className = "led";
+        if (allRunning) gLed.classList.add("led-green");
+        else if (anyError) gLed.classList.add("led-orange");
+        else if (allStopped) gLed.classList.add("led-red");
+        else gLed.classList.add("led-orange"); // Mixed state uses led-orange
+    }
 
     if (gStart) {
         gStart.style.opacity = (allRunning || anyLoading) ? "0.3" : "1";
