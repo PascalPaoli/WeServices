@@ -73,8 +73,12 @@ function updateRegistryAutoStart(enable: boolean) {
     const appName = "WeServices";
     
     let exePath = process.execPath;
-    // In Electrobun, process.execPath is the embedded bun.exe, but we must run launcher.exe
-    const launcherPath = exePath.replace(/bun\.exe$/i, "launcher.exe");
+    // In Electrobun, process.execPath is the embedded bun.exe, but we must run WeServices.exe or launcher.exe
+    let launcherPath = exePath.replace(/bun\.exe$/i, "WeServices.exe");
+    if (!existsSync(launcherPath)) {
+        launcherPath = exePath.replace(/bun\.exe$/i, "launcher.exe");
+    }
+    
     if (existsSync(launcherPath)) {
         exePath = launcherPath;
     }
