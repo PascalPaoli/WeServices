@@ -27,7 +27,7 @@ Suddenly, you have 5 different terminal windows open. One of them crashes. Anoth
   
   <br>
   
-  ![Video Demo](./assets/demo.mp4)
+  https://github.com/user-attachments/assets/dac219cd-6caf-4ce9-ba70-59e598d0462f
   
 </details>
 
