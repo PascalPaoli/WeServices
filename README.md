@@ -38,36 +38,40 @@ https://github.com/user-attachments/assets/dac219cd-6caf-4ce9-ba70-59e598d0462f
 - 📊 **Real-time Terminal Output**: Click on any service to view its live terminal output safely sandboxed. Automatically strips ugly ANSI codes for clean reading.
 - 🛡️ **Lock System**: Lock (🔒) critical services so you don't accidentally edit or delete them while working.
 
-## 🛠️ Installation & Quick Start
+## 🛠️ Installation (The 1-Click Windows Way)
 
-Because this app is built on **Bun**, it is incredibly fast and uses virtually zero memory compared to typical Electron apps.
+Because this app is built on **Bun** and **Electrobun**, it is incredibly fast and uses virtually zero memory compared to typical Electron apps.
 
-### 1. Prerequisites
-You need to have [Bun](https://bun.sh/) installed on your machine.
-```bash
-# Windows (Powershell)
+### 1. Install Prerequisites
+Make sure you have [Bun](https://bun.sh/) installed on your machine.
+```powershell
 powershell -c "irm bun.sh/install.ps1 | iex"
-
-# macOS/Linux
-curl -fsSL https://bun.sh/install | bash
 ```
 
-### 2. Clone and Install
+### 2. Clone the Repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/services-manager.git
-cd services-manager
+git clone https://github.com/PascalPaoli/WeServices.git
+cd WeServices
 bun install
 ```
 
-### 3. Run the App
-```bash
-bun run dev
+### 3. Ultimate One-Click Setup 🚀
+Run the setup script included for Windows users. It will automatically compile the project, rename the core engine to `WeServices.exe`, and place a clean **shortcut** right in your folder.
+```powershell
+.\Setup-WeServices.ps1
 ```
+**Done!** Just double-click the newly created shortcut to launch the app.
 
-### 4. Build for Release
-To build a standalone executable that you can share or put on your desktop:
+---
+
+### 👨‍💻 For UI Developers (Manual Run)
+If you want to run it dynamically with Hot-Module Replacement to edit the visual interface:
 ```bash
+# Generate the initial static dist folder
 bun run build:canary
+
+# Start in development mode
+bun run dev
 ```
 
 ---
