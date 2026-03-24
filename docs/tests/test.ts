@@ -1,1 +1,0 @@
-import pidtree from 'pidtree'; import pidusage from 'pidusage'; try { const pids = await pidtree(process.pid, {root: true}); console.log('pids', pids); const stats = await pidusage(pids); console.log('stats', stats); } catch(e) { console.error('ERROR', e); }
