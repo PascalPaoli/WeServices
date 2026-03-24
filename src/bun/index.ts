@@ -43,9 +43,9 @@ export type AppRPC = {
     webview: RPCSchema<{
         requests: {};
         messages: {
-            serviceStatusChange: { id: string, status: ServiceStatus, cpu?: number, mem?: number };
+            serviceStatusChange: { id: string, status: ServiceStatus, cpu?: number, mem?: number, gpu?: number, vram?: number };
             serviceLog: { id: string, text: string, type: 'out' | 'err' };
-            serviceMetrics: { id: string, cpu: number, mem: number };
+            serviceMetrics: { id: string, cpu: number, mem: number, gpu?: number, vram?: number };
         };
     }>;
 };
@@ -211,6 +211,31 @@ def get_metrics():
     pid_str = ",".join(map(str, all_targets))
     ps_cmd = f"$ErrorActionPreference = 'SilentlyContinue'; $procs = Get-Process -Id {pid_str}; $res = @(); foreach ($p in $procs) {{ $c = $p.CPU; if ($null -eq $c) {{ $c = 0 }}; $res += ($p.Id.ToString() + ':' + $c.ToString() + ':' + $p.WorkingSet.ToString()) }}; Write-Output ($res -join '|')"
     
+    gpu_metrics = {}
+    try:
+        out_vram = subprocess.check_output(["powershell", "-NoProfile", "-Command", "Get-WmiObject Win32_PerfFormattedData_GPUPerformanceCounters_GPUProcessMemory | ForEach-Object { $_.Name + ',' + $_.DedicatedUsage }"], universal_newlines=True, stderr=subprocess.DEVNULL, creationflags=0x08000000)
+        for line in out_vram.strip().split('\\n'):
+            parts = line.split(',')
+            if len(parts) == 2 and parts[0].startswith('pid_') and parts[1].strip().isdigit():
+                pid_part = parts[0].split('_')[1]
+                if pid_part.isdigit():
+                    pid = int(pid_part)
+                    vram_bytes = int(parts[1].strip())
+                    if pid not in gpu_metrics: gpu_metrics[pid] = {'vram': 0, 'sm': 0.0}
+                    gpu_metrics[pid]['vram'] += vram_bytes
+                
+        out_sm = subprocess.check_output(["nvidia-smi", "pmon", "-c", "1", "-s", "u"], universal_newlines=True, stderr=subprocess.DEVNULL, creationflags=0x08000000)
+        for line in out_sm.strip().split('\\n'):
+            if line.startswith('#') or not line.strip(): continue
+            parts = line.split()
+            if len(parts) >= 4 and parts[1].isdigit():
+                pid = int(parts[1])
+                sm = parts[3]
+                if sm.isdigit():
+                    if pid not in gpu_metrics: gpu_metrics[pid] = {'vram': 0, 'sm': 0.0}
+                    gpu_metrics[pid]['sm'] = float(sm)
+    except Exception: pass
+
     try:
         proc = subprocess.Popen(["powershell", "-NoProfile", "-Command", ps_cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=0x08000000, encoding="utf-8")
         out, _ = proc.communicate(timeout=5)
@@ -224,7 +249,7 @@ def get_metrics():
                     parts = c.split(':')
                     if len(parts) == 3:
                         c_pid = int(parts[0])
-                        c_cpu = float(parts[1].replace(',', '.')) if parts[1] else 0.0
+                        c_cpu = float(parts[1].replace(',', '.') if parts[1] else 0.0)
                         c_mem = int(parts[2]) if parts[2] else 0
                         proc_stats[c_pid] = (c_cpu, c_mem)
         
@@ -232,16 +257,21 @@ def get_metrics():
         for root in pids:
             total_cpu_time = 0.0
             total_mem = 0
+            total_gpu_vram = 0
+            total_gpu_sm = 0.0
             for child in family_map.get(root, []):
                 if child in proc_stats:
                     c_cpu, c_mem = proc_stats[child]
                     total_cpu_time += c_cpu
                     total_mem += c_mem
+                if child in gpu_metrics:
+                    total_gpu_vram += gpu_metrics[child]['vram']
+                    total_gpu_sm += gpu_metrics[child]['sm']
             
             prev = last_cpu_time.get(root, total_cpu_time)
             cpu_percent = ((total_cpu_time - prev) * 100.0) / cores
             last_cpu_time[root] = total_cpu_time
-            results[root] = {"cpu": max(0, cpu_percent), "mem": total_mem}
+            results[root] = {"cpu": max(0, cpu_percent), "mem": total_mem, "gpu": total_gpu_sm, "vram": total_gpu_vram}
             
         with open(METRICS_FILE, "w") as f: json.dump(results, f)
     except Exception: pass
@@ -306,7 +336,7 @@ setInterval(async () => {
         if (proc && proc.pid) {
             const stat = metricsData[proc.pid.toString()];
             if (stat) {
-                broadcastStatus(id, statuses[id], stat.cpu, stat.mem);
+                broadcastStatus(id, statuses[id], stat.cpu, stat.mem, stat.gpu, stat.vram);
             } else {
                 // If python takes time to catch up, ignore
             }
@@ -322,12 +352,14 @@ if (appSettings.autoStartServices) {
 
 let mainWindow: BrowserWindow | null = null;
 
-function broadcastStatus(id: string, status: ServiceStatus, cpu?: number, mem?: number) {
+function broadcastStatus(id: string, status: ServiceStatus, cpu?: number, mem?: number, gpu?: number, vram?: number) {
     statuses[id] = status;
     if (mainWindow && mainWindow.webview.rpc) {
         let payload: any = { id, status };
         if (cpu !== undefined) payload.cpu = cpu;
         if (mem !== undefined) payload.mem = mem;
+        if (gpu !== undefined) payload.gpu = gpu;
+        if (vram !== undefined) payload.vram = vram;
         (mainWindow.webview.rpc as any).send?.serviceStatusChange(payload);
     }
 }
@@ -540,7 +572,7 @@ const rpc = BrowserView.defineRPC<AppRPC>({
         messages: {
             serviceStatusChange: ({ id, status }: { id: string, status: any }) => {},
             serviceLog: ({ id, text, type }: {id: string, text: string, type: any}) => {},
-            serviceMetrics: ({ id, cpu, mem }: { id: string, cpu: number, mem: number }) => {},
+            serviceMetrics: ({ id, cpu, mem, gpu, vram }: { id: string, cpu: number, mem: number, gpu?: number, vram?: number }) => {},
             serviceClearLog: ({ id }: { id: string }) => {}
         } as any
     }

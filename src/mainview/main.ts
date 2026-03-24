@@ -31,17 +31,17 @@ export type AppRPC = {
             updateSettings: { params: { settings: any }, response: { success: boolean } };
         };
         messages: {
-            serviceStatusChange: { id: string, status: ServiceStatus, cpu?: number, mem?: number };
+            serviceStatusChange: { id: string, status: ServiceStatus, cpu?: number, mem?: number, gpu?: number, vram?: number };
             serviceLog: { id: string, text: string, type: 'out' | 'err' };
-            serviceMetrics: { id: string, cpu: number, mem: number };
+            serviceMetrics: { id: string, cpu: number, mem: number, gpu?: number, vram?: number };
         };
     };
     webview: {
         requests: {};
         messages: {
-            serviceStatusChange: { id: string, status: ServiceStatus, cpu?: number, mem?: number };
+            serviceStatusChange: { id: string, status: ServiceStatus, cpu?: number, mem?: number, gpu?: number, vram?: number };
             serviceLog: { id: string, text: string, type: 'out' | 'err' };
-            serviceMetrics: { id: string, cpu: number, mem: number };
+            serviceMetrics: { id: string, cpu: number, mem: number, gpu?: number, vram?: number };
             serviceClearLog: { id: string };
         };
     };
@@ -77,7 +77,7 @@ app.innerHTML = `
     <div class="app-container">
         <aside class="sidebar">
             <div class="sidebar-header">
-                <div style="display: flex; align-items: center; gap: 10px;"><img src="./favicon.png" style="width: 52px; height: 52px; border-radius: 12px; box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);" /><h2 style="margin: 0;">WeServices <span style="font-size: 0.5em; color: var(--text-secondary); vertical-align: middle;">v0.1.19</span></h2></div>
+                <div style="display: flex; align-items: center; gap: 10px;"><img src="./favicon.png" style="width: 52px; height: 52px; border-radius: 12px; box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);" /><h2 style="margin: 0;">WeServices <span style="font-size: 0.5em; color: var(--text-secondary); vertical-align: middle;">v0.1.20</span></h2></div>
                 <div style="display: flex; align-items: center; justify-content: center;">
                     <button id="btn-settings" class="btn-icon" style="margin-right: 12px; display: flex; width: 24px; height: 24px;" title="Settings">
                         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
@@ -647,22 +647,30 @@ rpc = Electroview.defineRPC<any>({
     handlers: {
         requests: {},
         messages: {
-            serviceStatusChange: ({ id, status, cpu, mem }: { id: string, status: ServiceStatus, cpu?: number, mem?: number }) => {
+            serviceStatusChange: ({ id, status, cpu, mem, gpu, vram }: { id: string, status: ServiceStatus, cpu?: number, mem?: number, gpu?: number, vram?: number }) => {
                 loadingServices[id] = false;
                 serviceStatuses[id] = status;
                 
                 if (cpu !== undefined && mem !== undefined) {
                     let cpuStr = Math.round(cpu) + "%";
-                    let memStr = (mem / 1024 / 1024).toFixed(0) + " MB";
+                    let memMb = mem / 1024 / 1024;
+                    let memStr = memMb > 500 ? (memMb / 1024).toFixed(1) + " Gb" : Math.round(memMb) + " Mb";
+                    
+                    let gpuStr = gpu !== undefined && gpu > 0 ? Math.round(gpu) + "%" : "0%";
+                    let vramNb = vram !== undefined ? vram / 1024 / 1024 : 0;
+                    let vramStr = vramNb > 500 ? (vramNb / 1024).toFixed(1) + " Gb" : Math.round(vramNb) + " Mb";
+
                     const val = `
-                        <div style="display: flex; gap: 18px;">
-                            <div style="display: flex; flex-direction: column; justify-content: center; align-items: flex-start;">
-                                <span style="font-size: 9px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; margin-bottom: -2px; letter-spacing: 0.5px;">CPU</span>
-                                <span style="font-size: 1.25rem; font-weight: 800; color: var(--success);">${cpuStr}</span>
+                        <div style="display: flex; gap: 16px; margin-top: 2px;">
+                            <div style="display: flex; flex-direction: column; align-items: center; width: 45px;">
+                                <span style="font-size: 8px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; margin-bottom: 2px;">CPU</span>
+                                <span style="font-size: 0.95rem; font-weight: 800; color: var(--success); margin-bottom: 2px;">${cpuStr}</span>
+                                <span style="font-size: 0.85rem; font-weight: 600; color: #a6accd;">${memStr}</span>
                             </div>
-                            <div style="display: flex; flex-direction: column; justify-content: center; align-items: flex-start;">
-                                <span style="font-size: 9px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; margin-bottom: -2px; letter-spacing: 0.5px;">RAM</span>
-                                <span style="font-size: 1.15rem; font-weight: 600; color: #a6accd;">${memStr}</span>
+                            <div style="display: flex; flex-direction: column; align-items: center; width: 50px;">
+                                <span style="font-size: 8px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; margin-bottom: 2px;">GPU</span>
+                                <span style="font-size: 0.95rem; font-weight: 800; color: var(--success); margin-bottom: 2px;">${gpuStr}</span>
+                                <span style="font-size: 0.85rem; font-weight: 600; color: #a6accd;">${vramStr}</span>
                             </div>
                         </div>`;
                     metricCache[id] = val;
@@ -694,18 +702,26 @@ rpc = Electroview.defineRPC<any>({
                     appendLogUI(cleanText);
                 }
             },
-            serviceMetrics: ({ id, cpu, mem }: { id: string, cpu: number, mem: number }) => {
+            serviceMetrics: ({ id, cpu, mem, gpu, vram }: { id: string, cpu: number, mem: number, gpu?: number, vram?: number }) => {
                 let cpuStr = Math.round(cpu) + "%";
-                let memStr = (mem / 1024 / 1024).toFixed(0) + " MB";
+                let memMb = mem / 1024 / 1024;
+                let memStr = memMb > 500 ? (memMb / 1024).toFixed(1) + " Gb" : Math.round(memMb) + " Mb";
+                
+                let gpuStr = gpu !== undefined && gpu > 0 ? Math.round(gpu) + "%" : "0%";
+                let vramNb = vram !== undefined ? vram / 1024 / 1024 : 0;
+                let vramStr = vramNb > 500 ? (vramNb / 1024).toFixed(1) + " Gb" : Math.round(vramNb) + " Mb";
+
                 const val = `
-                    <div style="display: flex; gap: 18px;">
-                        <div style="display: flex; flex-direction: column; justify-content: center; align-items: flex-start;">
-                            <span style="font-size: 9px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; margin-bottom: -2px; letter-spacing: 0.5px;">CPU</span>
-                            <span style="font-size: 1.25rem; font-weight: 800; color: var(--success);">${cpuStr}</span>
+                    <div style="display: flex; gap: 16px; margin-top: 2px;">
+                        <div style="display: flex; flex-direction: column; align-items: center; width: 45px;">
+                            <span style="font-size: 8px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; margin-bottom: 2px;">CPU</span>
+                            <span style="font-size: 0.95rem; font-weight: 800; color: var(--success); margin-bottom: 2px;">${cpuStr}</span>
+                            <span style="font-size: 0.85rem; font-weight: 600; color: #a6accd;">${memStr}</span>
                         </div>
-                        <div style="display: flex; flex-direction: column; justify-content: center; align-items: flex-start;">
-                            <span style="font-size: 9px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; margin-bottom: -2px; letter-spacing: 0.5px;">RAM</span>
-                            <span style="font-size: 1.15rem; font-weight: 600; color: #a6accd;">${memStr}</span>
+                        <div style="display: flex; flex-direction: column; align-items: center; width: 50px;">
+                            <span style="font-size: 8px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; margin-bottom: 2px;">GPU</span>
+                            <span style="font-size: 0.95rem; font-weight: 800; color: var(--success); margin-bottom: 2px;">${gpuStr}</span>
+                            <span style="font-size: 0.85rem; font-weight: 600; color: #a6accd;">${vramStr}</span>
                         </div>
                     </div>`;
                 

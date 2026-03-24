@@ -35,7 +35,8 @@ https://github.com/user-attachments/assets/dac219cd-6caf-4ce9-ba70-59e598d0462f
 
 - 🚦 **Dedicated Global Controls**: Independent 'Start All' and 'Stop All' buttons to reliably launch or safely terminate all services instantly.
 - 🟠 **Smart LED Watcher**: Real-time global LED that glows green when all systems are operational, red when everything is stopped, and warning orange for mixed states.
-- 🛑 **Anti-Zombie Safe Exit**: Attempts to close the application with active services running will trigger a native OS warning intercept. Quit safely without leaving headless Node/Python processes haunting your RAM!
+- 🛡️ **Anti-Zombie Safe Exit**: Attempts to close the application with active services running will trigger a native OS warning intercept. Quit safely without leaving headless Node/Python processes haunting your RAM!
+- 📈 **Real-Time Hardware Metrics**: Track CPU, RAM, GPU (%), and VRAM locally for all running processes on a beautiful dynamically scaled 3-line UI layout.
 - 🎨 **Premium UI & Branding**: Beautiful dark-theme interface with custom double-sized Sidebar Logo and injected Favicon.
 - 🚀 **Bulletproof Build Script**: The `Setup-WeServices.ps1` completely bypasses cross-origin limits, forces UI asset payload injections directly into the standalone `.exe`, and dynamically drops a shortcut for you.
 

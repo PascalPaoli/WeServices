@@ -4,6 +4,7 @@
 L'application *WeServices* est une interface bureau construite avec **Bun**, **Vite** (React/Vanilla JS) et le framework **Electrobun**.
 Elle gère le lancement et la supervision de multiples services/sous-processus en tâche de fond (scripts Python, serveurs Node, exécutables locaux, etc.) via des wrappers comme `powershell.exe` ou `npm`.
 Récemment, nous avons implémenté une fermeture 100% propre de l'application (Bouton "Quit App" avec modal "*Shutting Down WeServices*"), qui itère dynamiquement sur l'arbre de processus (PID) de chaque service pour nettoyer les processus zombies via une fonction de kill agressive de Windows (`Get-WmiObject / taskkill /T /F`), puis appelle `process.exit(0)`.
+L'interface intègre également un tracking hardware en temps réel (via les API WMI et `nvidia-smi` avec un daemon Python) qui remonte la consommation de CPU, RAM, GPU (%) et VRAM pour chaque service.
 
 **Objectif de la tâche :**
 Je souhaite ajouter un nouveau bouton **"Restart App"** à côté du bouton "Quit App" dans l'en-tête global de l'interface (`main.ts`).
