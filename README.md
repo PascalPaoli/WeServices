@@ -44,6 +44,10 @@ https://github.com/user-attachments/assets/dac219cd-6caf-4ce9-ba70-59e598d0462f
 - 🧠 **The Launch Vault**: It permanently stores all your exact launch commands, directories, and target ports. No more forgetting how to boot up a specific service.
 - 🟢 **One-Click Start/Stop**: Start or stop individual services, or hit the **Global Play** button to boot up your entire stack at once.
 - 🧟‍♂️ **Force Kill Zombies (Plumber)**: Did a service crash but keep its port open? Click the ⚡ (Zap) icon to magically find and ruthlessly murder the zombie process holding your port hostage.
+- ⚙️ **Quick Settings**: Easily configure auto-start preferences, computer boot settings, and toggle the new high-precision hardware tracking engine.
+  
+  <img src="./assets/settings.png" alt="Settings Configuration" width="500"/>
+
 - 📝 **Inline Editing**: Double-click any locked service to instantly open the inline editor. Change the starting directory, the boot command, or the target port on the fly.
   
   <img src="./assets/editor.png" alt="Inline Editor Details" width="500"/>
