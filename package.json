@@ -8,13 +8,17 @@
     "dev:vite": "vite",
     "dev": "concurrently \"bun run dev:vite\" \"bun run dev:bun\"",
     "hmr": "vite --port 5273",
-    "build:canary": "vite build && bun -e \"const fs=require('fs'); fs.writeFileSync('dist/index.html', fs.readFileSync('dist/index.html','utf8').replace(/ crossorigin/g, ''));\" && electrobun build --env=canary"
+    "build:canary": "vite build && bun -e \"const fs=require('fs'); fs.writeFileSync('dist/index.html', fs.readFileSync('dist/index.html','utf8').replace(/ crossorigin/g, ''));\" && electrobun build --env=canary",
+    "build:desktop": "vite build && bun -e \"const fs=require('fs'); fs.writeFileSync('dist/index.html', fs.readFileSync('dist/index.html','utf8').replace(/ crossorigin/g, ''));\" && electrobun build --env=dev"
   },
   "dependencies": {
-    "electrobun": "^1.16.0"
+    "electrobun": "^1.16.0",
+    "pidtree": "^0.6.0",
+    "pidusage": "^4.0.1"
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/pidusage": "^2.0.5",
     "concurrently": "^9.1.0",
     "typescript": "^5.7.2",
     "vite": "^6.0.3"

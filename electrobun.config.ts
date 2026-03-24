@@ -4,12 +4,13 @@ export default {
 	app: {
 		name: "vanilla-vite",
 		identifier: "vanillavite.electrobun.dev",
-		version: "0.0.1",
+		version: "0.0.3",
 	},
 	build: {
 		copy: {
 			"dist/index.html": "views/mainview/index.html",
 			"dist/assets": "views/mainview/assets",
+            "dist/favicon.png": "views/mainview/favicon.png",
 		},
 		watchIgnore: ["dist/**"],
 		mac: {

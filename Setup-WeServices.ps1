@@ -1,16 +1,18 @@
 Write-Host "[*] Compiling WeServices with Bun and Vite..."
-bun run build:canary
+bun run build:desktop
 
-$binFolder = "build\dev-win-x64\WeServices-dev\bin"
-
-# If the folder has the old generated name, fallback to it
+$binFolder = "build\dev-win-x64\vanilla-vite-dev\bin"
 if (-not (Test-Path $binFolder)) {
-    $binFolder = "build\dev-win-x64\vanilla-vite-dev\bin"
+    $binFolder = "build\dev-win-x64\WeServices-dev\bin"
 }
 
 if (Test-Path "$binFolder\launcher.exe") {
     Write-Host "[*] Renaming launcher.exe to WeServices.exe..."
-    Rename-Item "$binFolder\launcher.exe" "WeServices.exe"
+    Rename-Item "$binFolder\launcher.exe" "WeServices.exe" -Force
+}
+if (Test-Path "$binFolder\launcher") {
+    Write-Host "[*] Renaming launcher to WeServices.exe..."
+    Rename-Item "$binFolder\launcher" "WeServices.exe" -Force
 }
 
 Write-Host "[*] Patching missing views onto the bundled App..."

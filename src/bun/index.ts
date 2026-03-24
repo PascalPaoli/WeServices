@@ -4,6 +4,7 @@ import { spawn, type Subprocess } from "bun";
 import { join } from "path";
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { execSync } from "node:child_process";
+import * as os from "os";
 
 const DEV_SERVER_PORT = 5273;
 const DEV_SERVER_URL = `http://localhost:${DEV_SERVER_PORT}`;
@@ -16,6 +17,7 @@ export interface ServiceDef {
     dir: string;
     cmd: string;
     ports?: string;
+    url?: string;
 }
 
 export type AppRPC = {
@@ -25,13 +27,14 @@ export type AppRPC = {
             startService: { params: { id: string }, response: { success: boolean, error?: string } };
             stopService: { params: { id: string }, response: { success: boolean, error?: string } };
             restartService: { params: { id: string }, response: { success: boolean, error?: string } };
-            addService: { params: { name: string, dir: string, cmd: string, ports?: string }, response: { id: string, success: boolean, error?: string } };
-            updateService: { params: { id: string, name: string, dir: string, cmd: string, ports?: string }, response: { success: boolean, error?: string } };
+            addService: { params: { name: string, dir: string, cmd: string, ports?: string, url?: string }, response: { id: string, success: boolean, error?: string } };
+            updateService: { params: { id: string, name: string, dir: string, cmd: string, ports?: string, url?: string }, response: { success: boolean, error?: string } };
             reorderServices: { params: { services: ServiceDef[] }, response: { success: boolean } };
             removeService: { params: { id: string }, response: { success: boolean, error?: string } };
             shutdown: { params: void, response: void };
             forceCleanup: { params: void, response: void };
             freePort: { params: { ports: string }, response: { success: boolean, error?: string } };
+            openUrl: { params: { url: string }, response: { success: boolean, error?: string } };
             getSettings: { params: void, response: { settings: any } };
             updateSettings: { params: { settings: any }, response: { success: boolean } };
         };
@@ -40,8 +43,9 @@ export type AppRPC = {
     webview: RPCSchema<{
         requests: {};
         messages: {
-            serviceStatusChange: { id: string, status: ServiceStatus };
+            serviceStatusChange: { id: string, status: ServiceStatus, cpu?: number, mem?: number };
             serviceLog: { id: string, text: string, type: 'out' | 'err' };
+            serviceMetrics: { id: string, cpu: number, mem: number };
         };
     }>;
 };
@@ -67,6 +71,7 @@ const SETTINGS_PATH = fs.existsSync(oldSettings) ? oldSettings : join(confDir, "
 interface AppSettings {
     autoStartServices: boolean;
     autoStartApp: boolean;
+    enableMetrics?: boolean;
 }
 
 function loadSettings(): AppSettings {
@@ -75,7 +80,7 @@ function loadSettings(): AppSettings {
             return JSON.parse(readFileSync(SETTINGS_PATH, "utf-8"));
         } catch (e) {}
     }
-    const defaultSettings: AppSettings = { autoStartServices: false, autoStartApp: false };
+    const defaultSettings: AppSettings = { autoStartServices: false, autoStartApp: false, enableMetrics: false };
     saveSettings(defaultSettings);
     return defaultSettings;
 }
@@ -148,6 +153,167 @@ const statuses: Record<string, ServiceStatus> = {};
 
 services.forEach(s => statuses[s.id] = "stopped");
 
+// Resource Watchdog Loop (Decoupled JSON Architecture)
+let pyDaemonProc: Subprocess | null = null;
+const scriptContent = `
+import time
+import json
+import subprocess
+import os
+import ctypes
+from ctypes.wintypes import DWORD, LONG, ULONG
+
+PID_FILE = r"${join(os.tmpdir(), "weservices_pids.json").replace(/\\/g, '\\\\')}"
+METRICS_FILE = r"${join(os.tmpdir(), "weservices_metrics.json").replace(/\\/g, '\\\\')}"
+
+last_cpu_time = {}
+
+class PROCESSENTRY32(ctypes.Structure):
+    _fields_ = [("dwSize", DWORD), ("cntUsage", DWORD), ("th32ProcessID", DWORD), ("th32DefaultHeapID", ctypes.POINTER(ULONG)), ("th32ModuleID", DWORD), ("cntThreads", DWORD), ("th32ParentProcessID", DWORD), ("pcPriClassBase", LONG), ("dwFlags", DWORD), ("szExeFile", ctypes.c_char * 260)]
+
+def get_process_tree(parent_pids):
+    kernel32 = ctypes.windll.kernel32
+    hProcessSnap = kernel32.CreateToolhelp32Snapshot(2, 0)
+    pe32 = PROCESSENTRY32()
+    pe32.dwSize = ctypes.sizeof(PROCESSENTRY32)
+    parents = {}
+    if kernel32.Process32First(hProcessSnap, ctypes.byref(pe32)):
+        while True:
+            parents[pe32.th32ProcessID] = pe32.th32ParentProcessID
+            if not kernel32.Process32Next(hProcessSnap, ctypes.byref(pe32)):
+                break
+    kernel32.CloseHandle(hProcessSnap)
+    family_map = {}
+    all_targets = set()
+    for root in parent_pids:
+        descendants = {root}
+        changed = True
+        while changed:
+            changed = False
+            for pid, ppid in parents.items():
+                if pid not in descendants and ppid in descendants:
+                    descendants.add(pid)
+                    changed = True
+        family_map[root] = list(descendants)
+        all_targets.update(descendants)
+    return family_map, list(all_targets)
+
+def get_metrics():
+    if not os.path.exists(PID_FILE): return
+    try:
+        with open(PID_FILE, "r") as f: pids = json.load(f)
+    except Exception: return
+    if not pids: return
+    
+    family_map, all_targets = get_process_tree(pids)
+    if not all_targets: return
+    
+    pid_str = ",".join(map(str, all_targets))
+    ps_cmd = f"$ErrorActionPreference = 'SilentlyContinue'; $procs = Get-Process -Id {pid_str}; $res = @(); foreach ($p in $procs) {{ $c = $p.CPU; if ($null -eq $c) {{ $c = 0 }}; $res += ($p.Id.ToString() + ':' + $c.ToString() + ':' + $p.WorkingSet.ToString()) }}; Write-Output ($res -join '|')"
+    
+    try:
+        proc = subprocess.Popen(["powershell", "-NoProfile", "-Command", ps_cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=0x08000000, encoding="utf-8")
+        out, _ = proc.communicate(timeout=5)
+        out_str = out.strip() if out else ""
+        cores = os.cpu_count() or 1
+        
+        proc_stats = {}
+        if out_str:
+            for c in out_str.split('|'):
+                if ':' in c:
+                    parts = c.split(':')
+                    if len(parts) == 3:
+                        c_pid = int(parts[0])
+                        c_cpu = float(parts[1].replace(',', '.')) if parts[1] else 0.0
+                        c_mem = int(parts[2]) if parts[2] else 0
+                        proc_stats[c_pid] = (c_cpu, c_mem)
+        
+        results = {}
+        for root in pids:
+            total_cpu_time = 0.0
+            total_mem = 0
+            for child in family_map.get(root, []):
+                if child in proc_stats:
+                    c_cpu, c_mem = proc_stats[child]
+                    total_cpu_time += c_cpu
+                    total_mem += c_mem
+            
+            prev = last_cpu_time.get(root, total_cpu_time)
+            cpu_percent = ((total_cpu_time - prev) * 100.0) / cores
+            last_cpu_time[root] = total_cpu_time
+            results[root] = {"cpu": max(0, cpu_percent), "mem": total_mem}
+            
+        with open(METRICS_FILE, "w") as f: json.dump(results, f)
+    except Exception: pass
+
+while True:
+    time.sleep(1)
+    get_metrics()
+`;
+
+const pyPath = join(os.tmpdir(), "metrics_daemon.py");
+const pidsJsonPath = join(os.tmpdir(), "weservices_pids.json");
+const metricsJsonPath = join(os.tmpdir(), "weservices_metrics.json");
+
+function managePythonDaemon() {
+    if (appSettings?.enableMetrics) {
+        if (!pyDaemonProc) {
+            try {
+                writeFileSync(pyPath, scriptContent);
+                pyDaemonProc = spawn(["python", pyPath], { stdout: "ignore", stderr: "ignore" });
+            } catch(e) {
+                try { writeFileSync("C:/Temp/weservices_err.log", String(e)); } catch(err){}
+            }
+        }
+    } else {
+        if (pyDaemonProc) {
+            pyDaemonProc.kill();
+            pyDaemonProc = null;
+        }
+        try { writeFileSync(metricsJsonPath, "{}"); } catch(e) {}
+    }
+}
+
+managePythonDaemon();
+
+setInterval(async () => {
+    if (!mainWindow || !mainWindow.webview.rpc) return;
+    
+    // 1. Écrire les PIDs actifs de manière asynchrone non-bloquante
+    const activePids: number[] = [];
+    for (const [id, proc] of Object.entries(processes)) {
+        if ((statuses[id] === "running" || statuses[id] === "starting") && proc && proc.pid) {
+            activePids.push(proc.pid);
+        }
+    }
+    
+    try {
+        writeFileSync(pidsJsonPath, JSON.stringify(activePids));
+    } catch(e) {}
+    
+    // 2. Lire le résultat préparé par le démon Python
+    let metricsData: any = {};
+    if (existsSync(metricsJsonPath)) {
+        try {
+            const raw = readFileSync(metricsJsonPath, "utf-8");
+            metricsData = JSON.parse(raw);
+        } catch(e) {}
+    }
+    
+    // 3. Diffuser passivement à l'UI sans jamais figer le thread
+    for (const [id, proc] of Object.entries(processes)) {
+        if (statuses[id] !== "running" && statuses[id] !== "starting") continue;
+        if (proc && proc.pid) {
+            const stat = metricsData[proc.pid.toString()];
+            if (stat) {
+                broadcastStatus(id, statuses[id], stat.cpu, stat.mem);
+            } else {
+                // If python takes time to catch up, ignore
+            }
+        }
+    }
+}, 1000);
+
 if (appSettings.autoStartServices) {
     setTimeout(() => {
         services.forEach(s => startService(s.id));
@@ -156,10 +322,13 @@ if (appSettings.autoStartServices) {
 
 let mainWindow: BrowserWindow | null = null;
 
-function broadcastStatus(id: string, status: ServiceStatus) {
+function broadcastStatus(id: string, status: ServiceStatus, cpu?: number, mem?: number) {
     statuses[id] = status;
     if (mainWindow && mainWindow.webview.rpc) {
-        (mainWindow.webview.rpc as any).send?.serviceStatusChange({ id, status });
+        let payload: any = { id, status };
+        if (cpu !== undefined) payload.cpu = cpu;
+        if (mem !== undefined) payload.mem = mem;
+        (mainWindow.webview.rpc as any).send?.serviceStatusChange(payload);
     }
 }
 
@@ -186,6 +355,10 @@ async function startService(id: string) {
     if (!service) return { success: false, error: "Not found: " + id };
 
     try {
+        if (mainWindow && mainWindow.webview.rpc) {
+            sendLog(id, "<CLS>", 'out');
+        }
+
         const cmdArgs = service.cmd.match(/(?:[^\s"]+|"[^"]*")+/g)?.map(arg => arg.replace(/(^"|"$)/g, '')) || [];
         
         const proc = spawn({
@@ -273,6 +446,7 @@ const rpc = BrowserView.defineRPC<AppRPC>({
             updateSettings: ({ settings }) => {
                 appSettings = settings;
                 saveSettings(appSettings);
+                managePythonDaemon();
                 return { success: true };
             },
             startService: async ({ id }) => await startService(id),
@@ -283,20 +457,21 @@ const rpc = BrowserView.defineRPC<AppRPC>({
                 await new Promise(r => setTimeout(r, 500));
                 return await startService(id);
             },
-            addService: ({ name, dir, cmd, ports }) => {
+            addService: ({ name, dir, cmd, ports, url }) => {
                 const id = "service_" + Date.now();
-                services.push({ id, name, dir, cmd, ports });
+                services.push({ id, name, dir, cmd, ports, url });
                 statuses[id] = "stopped";
                 saveServices(services);
                 return { id, success: true };
             },
-            updateService: ({ id, name, dir, cmd, ports }) => {
+            updateService: ({ id, name, dir, cmd, ports, url }) => {
                 const service = services.find(s => s.id === id);
                 if (!service) return { success: false, error: "Not found" };
                 service.name = name;
                 service.dir = dir;
                 service.cmd = cmd;
                 service.ports = ports;
+                service.url = url;
                 saveServices(services);
                 return { success: true };
             },
@@ -324,8 +499,24 @@ const rpc = BrowserView.defineRPC<AppRPC>({
                     return { success: false, error: "Echec" };
                 }
             },
+            openUrl: ({ url }) => {
+                try {
+                    execSync(`start "" "${url}"`);
+                    return { success: true };
+                } catch(e: any) {
+                    return { success: false, error: e.message };
+                }
+            },
             shutdown: () => {
                 cleanupProcesses();
+                setTimeout(() => {
+                    if (mainWindow) {
+                        try { mainWindow.close(); } catch(e){}
+                    }
+                    try { spawn(["taskkill", "/IM", "weservices.exe", "/F"]); } catch(e){}
+                    try { spawn(["taskkill", "/IM", "launcher.exe", "/F"]); } catch(e){}
+                    process.exit(0);
+                }, 100);
                 return;
             },
             forceCleanup: () => {
@@ -346,41 +537,21 @@ const rpc = BrowserView.defineRPC<AppRPC>({
                 return;
             }
         },
-        messages: {}
+        messages: {
+            serviceStatusChange: ({ id, status }: { id: string, status: any }) => {},
+            serviceLog: ({ id, text, type }: {id: string, text: string, type: any}) => {},
+            serviceMetrics: ({ id, cpu, mem }: { id: string, cpu: number, mem: number }) => {},
+            serviceClearLog: ({ id }: { id: string }) => {}
+        } as any
     }
 });
 
 async function getMainViewUrl(): Promise<string> {
-    const channel = await Updater.localInfo.channel();
-    if (channel === "dev") {
-        for (let i = 0; i < 15; i++) {
-            try {
-                await fetch(DEV_SERVER_URL, { method: "HEAD" });
-                console.log(`HMR enabled: Using Vite dev server at ${DEV_SERVER_URL}`);
-                return DEV_SERVER_URL;
-            } catch {
-                await new Promise(r => setTimeout(r, 200));
-            }
-        }
-        console.log("Vite dev server not running.");
-    }
     return "views://mainview/index.html";
 }
 
 async function startViteDevServer() {
-    const channel = await Updater.localInfo.channel();
-    if (channel !== "dev") return;
-    try {
-        await fetch(DEV_SERVER_URL, { method: "HEAD" });
-    } catch {
-        console.log("Spawning Vite Dev Server internally...");
-        const viteProc = spawn(["C:\\Users\\jp_22\\.bun\\bin\\bun.exe", "run", "hmr"], { 
-            cwd: "F:\\AzTest\\Services_Manager",
-            stdin: "ignore", stdout: "ignore", stderr: "ignore"
-        });
-        processes["vite_hmr"] = viteProc as any;
-        if (viteProc.pid) attachWatchdog(viteProc.pid);
-    }
+    return;
 }
 await startViteDevServer();
 
@@ -405,11 +576,14 @@ let shuttingDown = false;
 function cleanupProcesses() {
     if (shuttingDown) return;
     shuttingDown = true;
+    try {
+        if (pyDaemonProc) pyDaemonProc.kill();
+    } catch(e) {}
     for (const id in processes) {
         const proc = processes[id];
         if (proc && proc.pid) {
             try {
-                execSync(`taskkill /T /F /PID ${proc.pid}`, { stdio: 'ignore' });
+                spawn(["taskkill", "/T", "/F", "/PID", proc.pid.toString()]);
             } catch (e) {}
         }
     }
