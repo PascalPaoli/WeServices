@@ -662,12 +662,12 @@ rpc = Electroview.defineRPC<any>({
 
                     const val = `
                         <div style="display: flex; gap: 16px; margin-top: 2px;">
-                            <div style="display: flex; flex-direction: column; align-items: center; width: 45px;">
+                            <div style="display: flex; flex-direction: column; align-items: center; width: 60px; white-space: nowrap;">
                                 <span style="font-size: 8px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; margin-bottom: 2px;">CPU</span>
                                 <span style="font-size: 0.95rem; font-weight: 800; color: var(--success); margin-bottom: 2px;">${cpuStr}</span>
                                 <span style="font-size: 0.85rem; font-weight: 600; color: #a6accd;">${memStr}</span>
                             </div>
-                            <div style="display: flex; flex-direction: column; align-items: center; width: 50px;">
+                            <div style="display: flex; flex-direction: column; align-items: center; width: 60px; white-space: nowrap;">
                                 <span style="font-size: 8px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; margin-bottom: 2px;">GPU</span>
                                 <span style="font-size: 0.95rem; font-weight: 800; color: var(--success); margin-bottom: 2px;">${gpuStr}</span>
                                 <span style="font-size: 0.85rem; font-weight: 600; color: #a6accd;">${vramStr}</span>
@@ -713,12 +713,12 @@ rpc = Electroview.defineRPC<any>({
 
                 const val = `
                     <div style="display: flex; gap: 16px; margin-top: 2px;">
-                        <div style="display: flex; flex-direction: column; align-items: center; width: 45px;">
+                        <div style="display: flex; flex-direction: column; align-items: center; width: 60px; white-space: nowrap;">
                             <span style="font-size: 8px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; margin-bottom: 2px;">CPU</span>
                             <span style="font-size: 0.95rem; font-weight: 800; color: var(--success); margin-bottom: 2px;">${cpuStr}</span>
                             <span style="font-size: 0.85rem; font-weight: 600; color: #a6accd;">${memStr}</span>
                         </div>
-                        <div style="display: flex; flex-direction: column; align-items: center; width: 50px;">
+                        <div style="display: flex; flex-direction: column; align-items: center; width: 60px; white-space: nowrap;">
                             <span style="font-size: 8px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; margin-bottom: 2px;">GPU</span>
                             <span style="font-size: 0.95rem; font-weight: 800; color: var(--success); margin-bottom: 2px;">${gpuStr}</span>
                             <span style="font-size: 0.85rem; font-weight: 600; color: #a6accd;">${vramStr}</span>
