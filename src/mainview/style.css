@@ -403,6 +403,19 @@ html, body {
   border-color: var(--accent);
 }
 
+.checkbox-group label {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  cursor: pointer;
+}
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;
