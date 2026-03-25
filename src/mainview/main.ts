@@ -649,6 +649,7 @@ rpc = Electroview.defineRPC<any>({
         messages: {
             serviceStatusChange: ({ id, status, cpu, mem, gpu, vram }: { id: string, status: ServiceStatus, cpu?: number, mem?: number, gpu?: number, vram?: number }) => {
                 loadingServices[id] = false;
+                const prevStatus = serviceStatuses[id];
                 serviceStatuses[id] = status;
                 
                 if (cpu !== undefined && mem !== undefined) {
@@ -678,7 +679,10 @@ rpc = Electroview.defineRPC<any>({
                     if (el) el.innerHTML = val;
                 }
                 
-                renderServices();
+                // ONLY trigger a full heavy re-render if the service state actually changed between running/stopped!
+                if (prevStatus !== status) {
+                    renderServices();
+                }
             },
             serviceLog: ({ id, text, type }: {id: string, text: string, type: 'out'|'err'}) => {
                 if (text === "<CLS>") {
