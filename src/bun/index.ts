@@ -209,7 +209,7 @@ def get_metrics():
     if not all_targets: return
     
     pid_str = ",".join(map(str, all_targets))
-    ps_cmd = f"$ErrorActionPreference = 'SilentlyContinue'; $procs = Get-Process -Id {pid_str}; $res = @(); foreach ($p in $procs) {{ $c = $p.CPU; if ($null -eq $c) {{ $c = 0 }}; $res += ($p.Id.ToString() + ':' + $c.ToString() + ':' + $p.WorkingSet.ToString()) }}; Write-Output ($res -join '|')"
+    ps_cmd = f"$ErrorActionPreference = 'SilentlyContinue'; $procs = Get-Process -Id {pid_str}; $res = @(); foreach ($p in $procs) {{ $c = $p.CPU; if ($null -eq $c) {{ $c = 0 }}; $res += ($p.Id.ToString() + ':' + $c.ToString() + ':' + $p.WorkingSet64.ToString()) }}; Write-Output ($res -join '|')"
     
     gpu_metrics = {}
     try:

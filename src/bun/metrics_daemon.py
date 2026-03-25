@@ -29,7 +29,7 @@ def get_metrics():
     foreach ($p in $procs) {{
         $c = $p.CPU
         if ($null -eq $c) {{ $c = 0 }}
-        $res += ($p.Id.ToString() + ':' + $c.ToString() + ':' + $p.WorkingSet.ToString())
+        $res += ($p.Id.ToString() + ':' + $c.ToString() + ':' + $p.WorkingSet64.ToString())
     }}
     Write-Output ($res -join '|')
     """
