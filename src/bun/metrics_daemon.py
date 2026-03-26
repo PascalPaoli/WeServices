@@ -101,5 +101,5 @@ def get_metrics():
         pass
 
 while True:
-    time.sleep(1)
+    time.sleep(3)
     get_metrics()

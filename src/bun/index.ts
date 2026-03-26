@@ -277,7 +277,7 @@ def get_metrics():
     except Exception: pass
 
 while True:
-    time.sleep(1)
+    time.sleep(3)
     get_metrics()
 `;
 
@@ -342,7 +342,7 @@ setInterval(async () => {
             }
         }
     }
-}, 1000);
+}, 3000);
 
 if (appSettings.autoStartServices) {
     setTimeout(() => {
