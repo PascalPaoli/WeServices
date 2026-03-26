@@ -269,7 +269,7 @@ def get_metrics():
                     total_gpu_sm += gpu_metrics[child]['sm']
             
             prev = last_cpu_time.get(root, total_cpu_time)
-            cpu_percent = ((total_cpu_time - prev) * 100.0) / cores
+            cpu_percent = (((total_cpu_time - prev) / 3.0) * 100.0) / cores
             last_cpu_time[root] = total_cpu_time
             results[root] = {"cpu": max(0, cpu_percent), "mem": total_mem, "gpu": total_gpu_sm, "vram": total_gpu_vram}
             

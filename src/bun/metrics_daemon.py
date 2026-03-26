@@ -89,7 +89,7 @@ def get_metrics():
                         gpu_sm = gpu_metrics.get(pid, {}).get('sm', 0.0)
                         
                         prev = last_cpu_time.get(pid, cpu_time)
-                        cpu_percent = ((cpu_time - prev) * 100.0) / cores
+                        cpu_percent = (((cpu_time - prev) / 3.0) * 100.0) / cores
                         last_cpu_time[pid] = cpu_time
                         
                         results[pid] = {"cpu": cpu_percent, "mem": mem, "gpu": gpu_sm, "vram": vram}
