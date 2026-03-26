@@ -426,6 +426,11 @@ function renderServices() {
         
         li.draggable = true;
         li.addEventListener('dragstart', (e) => {
+            const target = e.target as HTMLElement;
+            if (target.tagName === 'INPUT' || target.closest('.service-details')) {
+                e.preventDefault();
+                return;
+            }
             e.dataTransfer?.setData('text/plain', s.id);
             li.classList.add('dragging');
         });
