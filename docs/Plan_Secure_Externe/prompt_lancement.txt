@@ -1,0 +1,18 @@
+🚀 **Prompt de Lancement de Mission** 🚀
+*(Copiez-collez l'intégralité du texte ci-dessous dans votre interface IA lorsque vous êtes prêt à démarrer)*
+
+---
+
+Salut l'Agent ! 
+Aujourd'hui, nous déclenchons la mission **"Plan_Secure_Externe"** ! 
+
+Ton objectif est de protéger le serveur de l'API WeServices contre les accès non autorisés et de configurer un pare-feu/reverse proxy pour le rendre accessible depuis l'extérieur en toute sécurité.
+
+Voici ce que tu dois faire :
+1. Lis le fichier `F:\AzWorkspace\WeServices\docs\Plan_Secure_Externe\PLAN.md` pour t'imprégner de l'architecture.
+2. Ouvre le backend `src/bun/index.ts` et le frontend `src/mainview/main.ts`.
+3. Rends l'UI agnostique en créant la couche `fetch` conditionnelle pour remplacer `rpc.request` lorsque l'UI tourne dans un navigateur.
+4. Configure `Bun.serve` sur le port `24206` pour servir à la fois l'API et les fichiers statiques HTML/JS/CSS de l'UI compilée.
+5. Implémente **Firebase Authentication** dans le frontend Web et ajoute la vérification du token JWT dans l'API Backend pour sécuriser définitivement l'accès public.
+
+Au travail ! Montre-moi ton plan d'implémentation avant de commencer à coder.
