@@ -145,7 +145,7 @@ app.innerHTML = `
         </div>
 
         <div id="settings-overlay" class="modal-overlay hidden">
-            <div class="modal">
+            <div class="modal" style="width: 550px; max-width: 90vw;">
                 <h2>Settings</h2>
                 <div class="form-group checkbox-group">
                     <label>
@@ -165,7 +165,27 @@ app.innerHTML = `
                         Enable precise CPU/RAM metrics (Python/ctypes tracing)
                     </label>
                 </div>
-                <div class="modal-actions">
+                
+                <h3 style="margin-top: 24px; color: var(--text-primary); border-bottom: 1px solid var(--border); padding-bottom: 8px;">WeAi Integration API</h3>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">WeServices dynamically runs an internal REST API on <strong style="color: var(--success);">localhost:42069</strong> to allow programmatic control points.</p>
+                <div style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; font-family: monospace; font-size: 0.8rem; color: #a6accd; max-height: 200px; overflow-y: auto;">
+                    <div><b style="color: var(--warning);">GET</b> /api/services</div>
+                    <div style="margin-left: 12px; color: var(--text-secondary); margin-bottom: 8px;">List all services and current statuses.</div>
+                    
+                    <div><b style="color: var(--warning);">GET</b> /api/metrics</div>
+                    <div style="margin-left: 12px; color: var(--text-secondary); margin-bottom: 8px;">Get tracked metrics (CPU/GPU/RAM/VRAM) of all running processes.</div>
+                    
+                    <div><b style="color: var(--success);">POST</b> /api/services/<em>{id}</em>/start</div>
+                    <div style="margin-left: 12px; color: var(--text-secondary); margin-bottom: 8px;">Starts the specified service silently.</div>
+                    
+                    <div><b style="color: var(--danger);">POST</b> /api/services/<em>{id}</em>/stop</div>
+                    <div style="margin-left: 12px; color: var(--text-secondary); margin-bottom: 8px;">Stops the specified service cleanly.</div>
+                    
+                    <div><b style="color: var(--success);">POST</b> /api/services/<em>{id}</em>/restart</div>
+                    <div style="margin-left: 12px; color: var(--text-secondary); margin-bottom: 8px;">Restart the service automatically.</div>
+                </div>
+
+                <div class="modal-actions" style="margin-top: 24px;">
                     <button class="btn btn-primary" id="btn-close-settings">Close</button>
                 </div>
             </div>
