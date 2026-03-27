@@ -379,7 +379,15 @@ function attachWatchdog(childPid: number) {
     });
 }
 
-async function startService(id: string) {
+async function startService(id: string): Promise<{success: boolean, error?: string, results?: any[]}> {
+    if (id === "all") {
+        const results = [];
+        for (const s of services) {
+            results.push(await startService(s.id));
+        }
+        return { success: true, results };
+    }
+    
     if (processes[id]) {
         return { success: false, error: "Already running" };
     }
@@ -446,7 +454,15 @@ async function startService(id: string) {
     }
 }
 
-async function stopService(id: string) {
+async function stopService(id: string): Promise<{success: boolean, error?: string, results?: any[]}> {
+    if (id === "all") {
+        const results = [];
+        for (const s of services) {
+            results.push(await stopService(s.id));
+        }
+        return { success: true, results };
+    }
+
     const proc = processes[id];
     if (proc) {
         broadcastStatus(id, "stopping");

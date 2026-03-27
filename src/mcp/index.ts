@@ -43,13 +43,13 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "start_service",
-        description: "Start a specific WeService cleanly using its ID.",
+        description: "Start a specific WeService cleanly using its ID. Use 'all' as the ID to start all registered services at once.",
         inputSchema: {
           type: "object",
           properties: {
             id: {
               type: "string",
-              description: "The unique ID of the service to start",
+              description: "The unique ID of the service to start (or 'all')",
             },
           },
           required: ["id"],
@@ -57,13 +57,13 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "stop_service",
-        description: "Stop a specific WeService nicely using its ID.",
+        description: "Stop a specific WeService nicely using its ID. Use 'all' as the ID to stop every running service.",
         inputSchema: {
           type: "object",
           properties: {
             id: {
               type: "string",
-              description: "The unique ID of the service to stop",
+              description: "The unique ID of the service to stop (or 'all')",
             },
           },
           required: ["id"],
@@ -71,13 +71,13 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "restart_service",
-        description: "Restart a running WeService. Gracefully stops then starts it.",
+        description: "Restart a running WeService. Gracefully stops then starts it. Use 'all' to restart everything.",
         inputSchema: {
           type: "object",
           properties: {
             id: {
               type: "string",
-              description: "The unique ID of the service to restart",
+              description: "The unique ID of the service to restart (or 'all')",
             },
           },
           required: ["id"],
