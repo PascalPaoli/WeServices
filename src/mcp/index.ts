@@ -4,8 +4,25 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
+import * as fs from "fs";
+import { join } from "path";
 
 const WEAI_API_URL = "http://127.0.0.1:42069/api";
+
+const userHome = process.env.USERPROFILE || process.env.HOME || process.cwd();
+const settingsPath = fs.existsSync("F:\\AzWorkspace\\weservices_settings.json") 
+  ? "F:\\AzWorkspace\\weservices_settings.json" 
+  : join(userHome, ".weservices", "settings.json");
+
+function isMcpEnabled() {
+  try {
+    if (fs.existsSync(settingsPath)) {
+      const data = JSON.parse(fs.readFileSync(settingsPath, "utf-8"));
+      if (data.enableMcp === false) return false;
+    }
+  } catch(e) {}
+  return true;
+}
 
 const server = new Server(
   {
@@ -98,6 +115,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 
 // 2. Call tools
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  if (!isMcpEnabled()) {
+    return {
+      content: [{ type: "text", text: "[MCP Bridge Error] The WeServices MCP Bridge is strictly DISABLED in WeServices settings. Please enable it in the UI." }],
+      isError: true,
+    };
+  }
   try {
     const { name, arguments: args } = request.params;
     

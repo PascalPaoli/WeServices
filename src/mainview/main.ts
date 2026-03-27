@@ -168,7 +168,13 @@ app.innerHTML = `
                 <div class="form-group checkbox-group">
                     <label>
                         <input type="checkbox" id="chk-enable-api">
-                        Enable WeAi REST API & MCP Server (localhost:42069)
+                        Enable WeAi REST API (localhost:42069)
+                    </label>
+                </div>
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="chk-enable-mcp">
+                        Enable MCP Server Protocol (stdio proxy for Agents)
                     </label>
                 </div>
                 
@@ -269,8 +275,9 @@ const chkAutoStartServices = document.getElementById("chk-autostart-services") a
 const chkAutoStartApp = document.getElementById("chk-autostart-app") as HTMLInputElement;
 const chkEnableMetrics = document.getElementById("chk-enable-metrics") as HTMLInputElement;
 const chkEnableApi = document.getElementById("chk-enable-api") as HTMLInputElement;
+const chkEnableMcp = document.getElementById("chk-enable-mcp") as HTMLInputElement;
 
-let currentSettings: any = { autoStartServices: false, autoStartApp: false, enableMetrics: false, enableApi: true };
+let currentSettings: any = { autoStartServices: false, autoStartApp: false, enableMetrics: false, enableApi: true, enableMcp: true };
 
 document.getElementById("btn-settings")!.addEventListener("click", async () => {
     const res = await rpc.request.getSettings();
@@ -279,6 +286,7 @@ document.getElementById("btn-settings")!.addEventListener("click", async () => {
     chkAutoStartApp.checked = currentSettings.autoStartApp;
     chkEnableMetrics.checked = currentSettings.enableMetrics || false;
     chkEnableApi.checked = currentSettings.enableApi !== false;
+    chkEnableMcp.checked = currentSettings.enableMcp !== false;
     settingsOverlay.classList.remove("hidden");
 });
 
@@ -291,6 +299,7 @@ const handleSaveSettings = async () => {
     currentSettings.autoStartApp = chkAutoStartApp.checked;
     currentSettings.enableMetrics = chkEnableMetrics.checked;
     currentSettings.enableApi = chkEnableApi.checked;
+    currentSettings.enableMcp = chkEnableMcp.checked;
     await rpc.request.updateSettings({ settings: currentSettings });
 };
 
@@ -298,6 +307,7 @@ chkAutoStartServices.addEventListener("change", handleSaveSettings);
 chkAutoStartApp.addEventListener("change", handleSaveSettings);
 chkEnableMetrics.addEventListener("change", handleSaveSettings);
 chkEnableApi.addEventListener("change", handleSaveSettings);
+chkEnableMcp.addEventListener("change", handleSaveSettings);
 
 document.getElementById("btn-submit-add")!.addEventListener("click", async () => {
     const name = inputName.value;

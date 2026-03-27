@@ -73,6 +73,7 @@ interface AppSettings {
     autoStartApp: boolean;
     enableMetrics?: boolean;
     enableApi?: boolean;
+    enableMcp?: boolean;
 }
 
 function loadSettings(): AppSettings {
@@ -81,7 +82,7 @@ function loadSettings(): AppSettings {
             return JSON.parse(readFileSync(SETTINGS_PATH, "utf-8"));
         } catch (e) {}
     }
-    const defaultSettings: AppSettings = { autoStartServices: false, autoStartApp: false, enableMetrics: false, enableApi: true };
+    const defaultSettings: AppSettings = { autoStartServices: false, autoStartApp: false, enableMetrics: false, enableApi: true, enableMcp: true };
     saveSettings(defaultSettings);
     return defaultSettings;
 }
