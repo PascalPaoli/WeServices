@@ -165,6 +165,12 @@ app.innerHTML = `
                         Enable precise CPU/RAM metrics (Python/ctypes tracing)
                     </label>
                 </div>
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="chk-enable-api">
+                        Enable WeAi REST API & MCP Server (localhost:42069)
+                    </label>
+                </div>
                 
                 <h3 style="margin-top: 24px; color: var(--text-primary); border-bottom: 1px solid var(--border); padding-bottom: 8px;">WeAi Integration API</h3>
                 <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">WeServices dynamically runs an internal REST API on <strong style="color: var(--success);">localhost:42069</strong> to allow programmatic control points.</p>
@@ -262,8 +268,9 @@ const settingsOverlay = document.getElementById("settings-overlay")!;
 const chkAutoStartServices = document.getElementById("chk-autostart-services") as HTMLInputElement;
 const chkAutoStartApp = document.getElementById("chk-autostart-app") as HTMLInputElement;
 const chkEnableMetrics = document.getElementById("chk-enable-metrics") as HTMLInputElement;
+const chkEnableApi = document.getElementById("chk-enable-api") as HTMLInputElement;
 
-let currentSettings: any = { autoStartServices: false, autoStartApp: false, enableMetrics: false };
+let currentSettings: any = { autoStartServices: false, autoStartApp: false, enableMetrics: false, enableApi: true };
 
 document.getElementById("btn-settings")!.addEventListener("click", async () => {
     const res = await rpc.request.getSettings();
@@ -271,6 +278,7 @@ document.getElementById("btn-settings")!.addEventListener("click", async () => {
     chkAutoStartServices.checked = currentSettings.autoStartServices;
     chkAutoStartApp.checked = currentSettings.autoStartApp;
     chkEnableMetrics.checked = currentSettings.enableMetrics || false;
+    chkEnableApi.checked = currentSettings.enableApi !== false;
     settingsOverlay.classList.remove("hidden");
 });
 
@@ -282,12 +290,14 @@ const handleSaveSettings = async () => {
     currentSettings.autoStartServices = chkAutoStartServices.checked;
     currentSettings.autoStartApp = chkAutoStartApp.checked;
     currentSettings.enableMetrics = chkEnableMetrics.checked;
+    currentSettings.enableApi = chkEnableApi.checked;
     await rpc.request.updateSettings({ settings: currentSettings });
 };
 
 chkAutoStartServices.addEventListener("change", handleSaveSettings);
 chkAutoStartApp.addEventListener("change", handleSaveSettings);
 chkEnableMetrics.addEventListener("change", handleSaveSettings);
+chkEnableApi.addEventListener("change", handleSaveSettings);
 
 document.getElementById("btn-submit-add")!.addEventListener("click", async () => {
     const name = inputName.value;

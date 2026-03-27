@@ -72,6 +72,7 @@ interface AppSettings {
     autoStartServices: boolean;
     autoStartApp: boolean;
     enableMetrics?: boolean;
+    enableApi?: boolean;
 }
 
 function loadSettings(): AppSettings {
@@ -80,7 +81,7 @@ function loadSettings(): AppSettings {
             return JSON.parse(readFileSync(SETTINGS_PATH, "utf-8"));
         } catch (e) {}
     }
-    const defaultSettings: AppSettings = { autoStartServices: false, autoStartApp: false, enableMetrics: false };
+    const defaultSettings: AppSettings = { autoStartServices: false, autoStartApp: false, enableMetrics: false, enableApi: true };
     saveSettings(defaultSettings);
     return defaultSettings;
 }
@@ -116,6 +117,9 @@ function saveSettings(settings: AppSettings) {
     try {
         writeFileSync(SETTINGS_PATH, JSON.stringify(settings, null, 2));
         updateRegistryAutoStart(settings.autoStartApp);
+        if (typeof (global as any).toggleApi === "function") {
+            (global as any).toggleApi(settings.enableApi !== false);
+        }
     } catch (e) {}
 }
 
@@ -621,24 +625,39 @@ console.log("Services Manager started!");
 
 // --- WeAi Local API ---
 const WEAI_API_PORT = 42069;
-try {
-    Bun.serve({
-        port: WEAI_API_PORT,
-        fetch(req) {
-            const url = new URL(req.url);
-            
-            if (req.method === "OPTIONS") {
-                return new Response(null, {
-                    headers: {
-                        "Access-Control-Allow-Origin": "*",
-                        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-                        "Access-Control-Allow-Headers": "Content-Type"
-                    }
-                });
-            }
+let activeApiServer: any = null;
 
-            const headers = { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" };
-            const json = (data: any, status = 200) => new Response(JSON.stringify(data), { status, headers });
+(global as any).toggleApi = (enable: boolean) => {
+    if (!enable) {
+        if (activeApiServer) {
+            try {
+                activeApiServer.stop();
+                console.log(`WeAi API Server stopped on port ${WEAI_API_PORT}`);
+            } catch (e) {}
+            activeApiServer = null;
+        }
+        return;
+    }
+    if (activeApiServer) return;
+
+    try {
+        activeApiServer = Bun.serve({
+            port: WEAI_API_PORT,
+            fetch(req) {
+                const url = new URL(req.url);
+                
+                if (req.method === "OPTIONS") {
+                    return new Response(null, {
+                        headers: {
+                            "Access-Control-Allow-Origin": "*",
+                            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                            "Access-Control-Allow-Headers": "Content-Type"
+                        }
+                    });
+                }
+
+                const headers = { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" };
+                const json = (data: any, status = 200) => new Response(JSON.stringify(data), { status, headers });
 
             try {
                 if (req.method === "GET" && url.pathname === "/api/services") {
@@ -694,9 +713,15 @@ try {
         }
     });
     console.log(`WeAi Local API Server running on port ${WEAI_API_PORT}`);
-} catch (e: any) {
-    console.error(`Failed to start WeAi API on port ${WEAI_API_PORT}:`, e.message);
-}
+
+    } catch (e: any) {
+        console.error(`Failed to start WeAi API on port ${WEAI_API_PORT}:`, e.message);
+    }
+};
+
+// Start the API server according to current settings (defalts to true)
+(global as any).toggleApi(appSettings.enableApi !== false);
+
 // ----------------------
 
 // Add global shutdown hooks to aggressively kill child processes on Windows
