@@ -46,6 +46,7 @@ export type AppRPC = {
             serviceStatusChange: { id: string, status: ServiceStatus, cpu?: number, mem?: number, gpu?: number, vram?: number };
             serviceLog: { id: string, text: string, type: 'out' | 'err' };
             serviceMetrics: { id: string, cpu: number, mem: number, gpu?: number, vram?: number };
+            sysMetrics: { cpu: number, mem_tot: number, mem_used: number, gpu: number, vram_tot: number, vram_used: number };
         };
     }>;
 };
@@ -214,7 +215,7 @@ def get_metrics():
     if not all_targets: return
     
     pid_str = ",".join(map(str, all_targets))
-    ps_cmd = f"$ErrorActionPreference = 'SilentlyContinue'; $procs = Get-Process -Id {pid_str}; $res = @(); foreach ($p in $procs) {{ $c = $p.CPU; if ($null -eq $c) {{ $c = 0 }}; $res += ($p.Id.ToString() + ':' + $c.ToString() + ':' + $p.WorkingSet64.ToString()) }}; Write-Output ($res -join '|')"
+    ps_cmd = f"$ErrorActionPreference = 'SilentlyContinue'; $os=Get-CimInstance Win32_OperatingSystem; $syscpu=(Get-WmiObject Win32_Processor | Measure-Object -Property LoadPercentage -Average).Average; $procs = Get-Process -Id {pid_str}; $res = @(); foreach ($p in $procs) {{ $c = $p.CPU; if ($null -eq $c) {{ $c = 0 }}; $res += ($p.Id.ToString() + ':' + $c.ToString() + ':' + $p.WorkingSet64.ToString()) }}; Write-Output ('__SYS__:' + $syscpu + ':' + $os.TotalVisibleMemorySize + ':' + $os.FreePhysicalMemory + '|' + ($res -join '|'))"
     
     gpu_metrics = {}
     try:
@@ -248,15 +249,36 @@ def get_metrics():
         cores = os.cpu_count() or 1
         
         proc_stats = {}
+        sys_cpu = 0.0
+        sys_mem_tot = 0
+        sys_mem_free = 0
         if out_str:
             for c in out_str.split('|'):
-                if ':' in c:
+                if c.startswith('__SYS__:'):
+                    sysparts = c.split(':')
+                    if len(sysparts) >= 4:
+                        sys_cpu = float(sysparts[1].replace(',', '.') if sysparts[1] else 0.0)
+                        sys_mem_tot = (int(sysparts[2]) * 1024) if sysparts[2] else 0
+                        sys_mem_free = (int(sysparts[3]) * 1024) if sysparts[3] else 0
+                elif ':' in c:
                     parts = c.split(':')
                     if len(parts) == 3:
                         c_pid = int(parts[0])
                         c_cpu = float(parts[1].replace(',', '.') if parts[1] else 0.0)
                         c_mem = int(parts[2]) if parts[2] else 0
                         proc_stats[c_pid] = (c_cpu, c_mem)
+        
+        sys_vram_used = 0
+        sys_vram_tot = 0
+        sys_gpu_util = 0.0
+        try:
+            out_sys_gpu = subprocess.check_output(["nvidia-smi", "--query-gpu=utilization.gpu,memory.used,memory.total", "--format=csv,noheader,nounits"], universal_newlines=True, stderr=subprocess.DEVNULL, creationflags=0x08000000)
+            gpuparts = out_sys_gpu.strip().split(',')
+            if len(gpuparts) >= 3:
+                sys_gpu_util = float(gpuparts[0].strip())
+                sys_vram_used = int(gpuparts[1].strip()) * 1024.0 * 1024.0
+                sys_vram_tot = int(gpuparts[2].strip()) * 1024.0 * 1024.0
+        except Exception: pass
         
         results = {}
         for root in pids:
@@ -277,6 +299,15 @@ def get_metrics():
             cpu_percent = (((total_cpu_time - prev) / 3.0) * 100.0) / cores
             last_cpu_time[root] = total_cpu_time
             results[root] = {"cpu": max(0, cpu_percent), "mem": total_mem, "gpu": total_gpu_sm, "vram": total_gpu_vram}
+            
+        results["__SYS__"] = {
+            "cpu": sys_cpu,
+            "mem_tot": sys_mem_tot,
+            "mem_used": sys_mem_tot - sys_mem_free,
+            "gpu": sys_gpu_util,
+            "vram_tot": sys_vram_tot,
+            "vram_used": sys_vram_used
+        }
             
         with open(METRICS_FILE, "w") as f: json.dump(results, f)
     except Exception: pass
@@ -346,6 +377,13 @@ setInterval(async () => {
                 // If python takes time to catch up, ignore
             }
         }
+    }
+    
+    // Broadcast global system metrics
+    if (metricsData["__SYS__"] && mainWindow && mainWindow.webview.rpc && appSettings?.enableMetrics) {
+        try {
+            (mainWindow.webview.rpc as any).send?.sysMetrics(metricsData["__SYS__"]);
+        } catch(e) {}
     }
 }, 3000);
 
