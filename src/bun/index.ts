@@ -603,6 +603,82 @@ mainWindow = new BrowserWindow({
 
 console.log("Services Manager started!");
 
+// --- WeAi Local API ---
+const WEAI_API_PORT = 42069;
+Bun.serve({
+    port: WEAI_API_PORT,
+    fetch(req) {
+        const url = new URL(req.url);
+        
+        if (req.method === "OPTIONS") {
+            return new Response(null, {
+                headers: {
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                    "Access-Control-Allow-Headers": "Content-Type"
+                }
+            });
+        }
+
+        const headers = { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" };
+        const json = (data: any, status = 200) => new Response(JSON.stringify(data), { status, headers });
+
+        try {
+            if (req.method === "GET" && url.pathname === "/api/services") {
+                return json({ services, statuses });
+            }
+            if (req.method === "GET" && url.pathname === "/api/metrics") {
+                let metricsData = {};
+                try {
+                    if (existsSync(metricsJsonPath)) {
+                        metricsData = JSON.parse(readFileSync(metricsJsonPath, "utf-8"));
+                    }
+                } catch(e) {}
+                return json(metricsData);
+            }
+            if (req.method === "POST") {
+                if (url.pathname === "/api/cleanup") {
+                    const killCmds = [
+                        "taskkill /F /IM kokoro_api.exe /T 2>NUL",
+                        "taskkill /F /IM cargo.exe /T 2>NUL",
+                        "taskkill /F /IM node.exe /T 2>NUL",
+                        "taskkill /F /IM npm.cmd /T 2>NUL",
+                        "taskkill /F /IM pnpm.exe /T 2>NUL",
+                        "taskkill /F /IM python.exe /T 2>NUL",
+                        "taskkill /F /IM pwsh.exe /T 2>NUL"
+                    ];
+                    for (const cmd of killCmds) {
+                        try { execSync(cmd, { stdio: 'ignore' }); } catch(e) {}
+                    }
+                    return json({ success: true, action: "cleanup" });
+                }
+                const matchStart = url.pathname.match(/^\/api\/services\/(.+)\/start$/);
+                if (matchStart) {
+                    startService(matchStart[1]);
+                    return json({ success: true, action: "start", id: matchStart[1] });
+                }
+                const matchStop = url.pathname.match(/^\/api\/services\/(.+)\/stop$/);
+                if (matchStop) {
+                    stopService(matchStop[1]);
+                    return json({ success: true, action: "stop", id: matchStop[1] });
+                }
+                const matchRestart = url.pathname.match(/^\/api\/services\/(.+)\/restart$/);
+                if (matchRestart) {
+                    stopService(matchRestart[1]).then(() => {
+                        setTimeout(() => startService(matchRestart[1]), 500);
+                    });
+                    return json({ success: true, action: "restart", id: matchRestart[1] });
+                }
+            }
+            return new Response("Not Found", { status: 404, headers });
+        } catch (e: any) {
+            return json({ success: false, error: e.message }, 500);
+        }
+    }
+});
+console.log(`WeAi Local API Server running on port ${WEAI_API_PORT}`);
+// ----------------------
+
 // Add global shutdown hooks to aggressively kill child processes on Windows
 let shuttingDown = false;
 function cleanupProcesses() {

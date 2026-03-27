@@ -183,6 +183,9 @@ app.innerHTML = `
                     
                     <div><b style="color: var(--success);">POST</b> /api/services/<em>{id}</em>/restart</div>
                     <div style="margin-left: 12px; color: var(--text-secondary); margin-bottom: 8px;">Restart the service automatically.</div>
+                    
+                    <div><b style="color: var(--danger);">POST</b> /api/cleanup</div>
+                    <div style="margin-left: 12px; color: var(--text-secondary); margin-bottom: 8px;">Force kill all known ghost/zombie processes (Node, JS, Python, etc.).</div>
                 </div>
 
                 <div class="modal-actions" style="margin-top: 24px;">
