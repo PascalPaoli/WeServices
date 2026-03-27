@@ -176,16 +176,23 @@ app.innerHTML = `
                     <div style="margin-left: 12px; color: var(--text-secondary); margin-bottom: 8px;">Get tracked metrics (CPU/GPU/RAM/VRAM) of all running processes.</div>
                     
                     <div><b style="color: var(--success);">POST</b> /api/services/<em>{id}</em>/start</div>
-                    <div style="margin-left: 12px; color: var(--text-secondary); margin-bottom: 8px;">Starts the specified service silently.</div>
+                    <div style="margin-left: 12px; color: var(--text-secondary); margin-bottom: 8px;">Starts the specified service silently (use <em>all</em> to start everything).</div>
                     
                     <div><b style="color: var(--danger);">POST</b> /api/services/<em>{id}</em>/stop</div>
-                    <div style="margin-left: 12px; color: var(--text-secondary); margin-bottom: 8px;">Stops the specified service cleanly.</div>
+                    <div style="margin-left: 12px; color: var(--text-secondary); margin-bottom: 8px;">Stops the specified service cleanly (use <em>all</em> to stop everything).</div>
                     
                     <div><b style="color: var(--success);">POST</b> /api/services/<em>{id}</em>/restart</div>
-                    <div style="margin-left: 12px; color: var(--text-secondary); margin-bottom: 8px;">Restart the service automatically.</div>
+                    <div style="margin-left: 12px; color: var(--text-secondary); margin-bottom: 8px;">Restart the service automatically (use <em>all</em> to restart everything).</div>
                     
                     <div><b style="color: var(--danger);">POST</b> /api/cleanup</div>
-                    <div style="margin-left: 12px; color: var(--text-secondary); margin-bottom: 8px;">Force kill all known ghost/zombie processes (Node, JS, Python, etc.).</div>
+                    <div style="margin-left: 12px; color: var(--text-secondary); margin-bottom: 16px;">Force kill all known ghost/zombie processes (Node, JS, Python, etc.).</div>
+                    
+                    <h4 style="margin-top: 16px; color: var(--text-primary); border-bottom: 1px dashed var(--border); padding-bottom: 4px;">🌟 MCP Server Bridge (Agent AI Config)</h4>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px;">WeServices comes with a blazing fast MCP server out-of-the-box. Add the following to your AI Agent's <code>mcp_config.json</code>:</p>
+                    <pre style="background: #1e1e24; color: #a1ef8c; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 0.75rem; white-space: pre-wrap; overflow-x: hidden;">"weservices": {
+  "command": "bun",
+  "args": ["run", "F:/AzWorkspace/WeServices/src/mcp/index.ts"]
+}</pre>
                 </div>
 
                 <div class="modal-actions" style="margin-top: 24px;">
