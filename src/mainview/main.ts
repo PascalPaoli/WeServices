@@ -97,25 +97,40 @@ app.innerHTML = `
                 </div>
                 
                 <div id="global-dash" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 24px; display: flex; gap: 32px; align-items: center; justify-content: center;">
-                    <!-- Col 1: CPU / RAM -->
-                    <div style="display: flex; flex-direction: column; gap: 2px; align-items: center; min-width: 100px;">
-                        <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">CPU / RAM</span>
-                        <span id="dash-sys-cpu" style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums;">--%</span>
-                        <span id="dash-sys-ram" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); font-variant-numeric: tabular-nums;">--Gb</span>
-                        <span id="dash-svc-cpu" style="font-size: 1.15rem; font-weight: 800; color: var(--accent); margin-top: 8px; font-variant-numeric: tabular-nums;">--%</span>
-                        <span id="dash-svc-ram" style="font-size: 0.8rem; font-weight: 600; color: var(--accent); opacity: 0.8; font-variant-numeric: tabular-nums;">--Gb</span>
-                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 4px 24px; align-items: center; text-align: center; min-width: 250px;">
+                        <!-- Headers -->
+                        <div style="grid-column: 1; font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; padding-bottom: 2px;">CPU / RAM</div>
+                        <div style="grid-column: 2;"></div>
+                        <div style="grid-column: 3; font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; padding-bottom: 2px;">GPU / VRAM</div>
+                        
+                        <!-- Divider -->
+                        <div style="grid-column: 1 / -1; height: 1px; background: rgba(255,255,255,0.15); margin-bottom: 4px;"></div>
+                        
+                        <!-- PC Row -->
+                        <div style="grid-column: 1; display: flex; flex-direction: column; gap: 2px;">
+                            <span id="dash-sys-cpu" style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums;">--%</span>
+                            <span id="dash-sys-ram" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); font-variant-numeric: tabular-nums;">--Gb</span>
+                        </div>
+                        <div style="grid-column: 2; font-weight: 900; font-size: 0.85rem; color: #ffffff; letter-spacing: 1px;">PC</div>
+                        <div style="grid-column: 3; display: flex; flex-direction: column; gap: 2px;">
+                            <span id="dash-sys-gpu" style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums;">--%</span>
+                            <span id="dash-sys-vram" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); font-variant-numeric: tabular-nums;">--Gb</span>
+                        </div>
 
-                    <!-- Separator -->
-                    <div style="width: 1px; height: 60px; background: rgba(255,255,255,0.05);"></div>
+                        <!-- Divider -->
+                        <div style="grid-column: 1 / -1; height: 1px; background: rgba(255,255,255,0.15); margin: 4px 0;"></div>
 
-                    <!-- Col 2: GPU / VRAM -->
-                    <div style="display: flex; flex-direction: column; gap: 2px; align-items: center; min-width: 100px;">
-                        <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">GPU / VRAM</span>
-                        <span id="dash-sys-gpu" style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums;">--%</span>
-                        <span id="dash-sys-vram" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); font-variant-numeric: tabular-nums;">--Gb</span>
-                        <span id="dash-svc-gpu" style="font-size: 1.15rem; font-weight: 800; color: var(--accent); margin-top: 8px; font-variant-numeric: tabular-nums;">--%</span>
-                        <span id="dash-svc-vram" style="font-size: 0.8rem; font-weight: 600; color: var(--accent); opacity: 0.8; font-variant-numeric: tabular-nums;">--Gb</span>
+                        <!-- Serv Row -->
+                        <div style="grid-column: 1; display: flex; flex-direction: column; gap: 2px;">
+                            <span id="dash-svc-cpu" style="font-size: 1.15rem; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums;">--%</span>
+                            <span id="dash-svc-ram" style="font-size: 0.8rem; font-weight: 600; color: var(--accent); opacity: 0.8; font-variant-numeric: tabular-nums;">--Gb</span>
+                        </div>
+                        <div style="grid-column: 2; font-weight: 800; font-size: 0.85rem; color: var(--accent); letter-spacing: 0.5px;">Serv.</div>
+                        <div style="grid-column: 3; display: flex; flex-direction: column; gap: 2px;">
+                            <span id="dash-svc-gpu" style="font-size: 1.15rem; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums;">--%</span>
+                            <span id="dash-svc-vram" style="font-size: 0.8rem; font-weight: 600; color: var(--accent); opacity: 0.8; font-variant-numeric: tabular-nums;">--Gb</span>
+                        </div>
                     </div>
 
                     <!-- ACTIVE SVCS -->
