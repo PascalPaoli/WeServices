@@ -215,7 +215,7 @@ def get_metrics():
     if not all_targets: return
     
     pid_str = ",".join(map(str, all_targets))
-    ps_cmd = f"$ErrorActionPreference = 'SilentlyContinue'; $os=Get-CimInstance Win32_OperatingSystem; $syscpu=(Get-WmiObject Win32_Processor | Measure-Object -Property LoadPercentage -Average).Average; $procs = Get-Process -Id {pid_str}; $res = @(); foreach ($p in $procs) {{ $c = $p.CPU; if ($null -eq $c) {{ $c = 0 }}; $res += ($p.Id.ToString() + ':' + $c.ToString() + ':' + $p.WorkingSet64.ToString()) }}; Write-Output ('__SYS__:' + $syscpu + ':' + $os.TotalVisibleMemorySize + ':' + $os.FreePhysicalMemory + '|' + ($res -join '|'))"
+    ps_cmd = f"$ErrorActionPreference = 'SilentlyContinue'; $os=Get-CimInstance Win32_OperatingSystem; $syscpu=(Get-WmiObject Win32_Processor | Measure-Object -Property LoadPercentage -Average).Average; $procs = Get-Process -Id {pid_str}; $res = @(); foreach ($p in $procs) {{ $c = $p.CPU; if ($null -eq $c) {{ $c = 0 }}; $res += ($p.Id.ToString() + ':' + $c.ToString() + ':' + $p.WorkingSet64.ToString()) }}; Write-Output ( \\\"{{0}}:{{1}}:{{2}}:{{3}}|{{4}}\\\" -f '__SYS__', $syscpu, $os.TotalVisibleMemorySize, $os.FreePhysicalMemory, ($res -join '|') )"
     
     gpu_metrics = {}
     try:
