@@ -7,7 +7,7 @@ import {
 import * as fs from "fs";
 import { join } from "path";
 
-const WEAI_API_URL = "http://127.0.0.1:42069/api";
+const WEAI_API_URL = "http://127.0.0.1:24206/api";
 
 const userHome = process.env.USERPROFILE || process.env.HOME || process.cwd();
 const settingsPath = fs.existsSync("F:\\AzWorkspace\\weservices_settings.json") 
@@ -127,21 +127,21 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     // GET Actions
     if (name === "get_services") {
       const res = await fetch(`${WEAI_API_URL}/services`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to reach WeServices Hub on 42069`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to reach WeServices Hub on 24206`);
       const data = await res.json();
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
     
     if (name === "get_metrics") {
       const res = await fetch(`${WEAI_API_URL}/metrics`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to reach WeServices Hub on 42069`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to reach WeServices Hub on 24206`);
       const data = await res.json();
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
 
     if (name === "cleanup_zombies") {
       const res = await fetch(`${WEAI_API_URL}/cleanup`, { method: "POST" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to reach WeServices Hub on 42069`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to reach WeServices Hub on 24206`);
       const data = await res.json();
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }

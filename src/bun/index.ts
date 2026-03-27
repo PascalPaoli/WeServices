@@ -625,7 +625,7 @@ mainWindow = new BrowserWindow({
 console.log("Services Manager started!");
 
 // --- WeAi Local API ---
-const WEAI_API_PORT = 42069;
+const WEAI_API_PORT = 24206;
 let activeApiServer: any = null;
 
 (global as any).toggleApi = (enable: boolean) => {

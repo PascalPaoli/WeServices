@@ -168,7 +168,7 @@ app.innerHTML = `
                 <div class="form-group checkbox-group">
                     <label>
                         <input type="checkbox" id="chk-enable-api">
-                        Enable WeAi REST API (localhost:42069)
+                        Enable WeAi REST API (localhost:24206)
                     </label>
                 </div>
                 <div class="form-group checkbox-group">
@@ -179,7 +179,7 @@ app.innerHTML = `
                 </div>
                 
                 <h3 style="margin-top: 24px; color: var(--text-primary); border-bottom: 1px solid var(--border); padding-bottom: 8px;">WeAi Integration API</h3>
-                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">WeServices dynamically runs an internal REST API on <strong style="color: var(--success);">localhost:42069</strong> to allow programmatic control points.</p>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">WeServices dynamically runs an internal REST API on <strong style="color: var(--success);">localhost:24206</strong> to allow programmatic control points.</p>
                 <div style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; font-family: monospace; font-size: 0.8rem; color: #a6accd; max-height: 200px; overflow-y: auto;">
                     <div><b style="color: var(--warning);">GET</b> /api/services</div>
                     <div style="margin-left: 12px; color: var(--text-secondary); margin-bottom: 8px;">List all services and current statuses.</div>
