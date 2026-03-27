@@ -144,19 +144,19 @@ app.innerHTML = `
                     </div>
                 </div>
 
-                <div style="display: flex; align-items: stretch; gap: 12px; background: rgba(0,0,0,0.15); padding: 8px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.03);">
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 8px;">
-                        <div class="header-actions" style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12px 16px; align-items: center; justify-items: center;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; background: rgba(0,0,0,0.15); padding: 8px 12px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.03);">
+                    <div style="display: flex; gap: 14px; align-items: stretch;">
+                        <div class="header-actions" style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px 14px; align-items: center; justify-items: center; padding: 2px;">
                             <button class="btn-xxl-icon" id="btn-global-start" title="Start All" style="color: var(--success); padding: 2px;">${ICONS.start}</button>
                             <button class="btn-xxl-icon" id="btn-cleanup" title="Force Clean Zombies" style="color: var(--warning); padding: 2px;">${ICONS.broom || '⚡'}</button>
                             <button class="btn-xxl-icon" id="btn-global-stop" title="Stop All" style="color: var(--danger); padding: 2px;">${ICONS.stop}</button>
                             <div id="global-led" class="led led-red" style="width: 14px; height: 14px; margin: auto;"></div>
                         </div>
-                        <div style="color: #ffffff; font-size: 0.65rem; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-top: 4px; opacity: 0.8;">All Services</div>
+                        <button id="btn-quit-app" title="Quit WeServices" style="background: rgba(236,114,128,0.05); border-radius: 12px; color: #ec7280; width: 56px; height: 100%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; border: 2px solid rgba(236,114,128,0.15); cursor: pointer;" onmouseover="this.style.background='rgba(236,114,128,0.2)'; this.style.transform='scale(1.05)';" onmouseout="this.style.background='rgba(236,114,128,0.05)'; this.style.transform='scale(1)';">
+                            ${ICONS.close}
+                        </button>
                     </div>
-                    <button id="btn-quit-app" title="Quit WeServices" style="background: rgba(236,114,128,0.05); border-radius: 12px; color: #ec7280; width: 62px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; border: 2px solid rgba(236,114,128,0.15); cursor: pointer;" onmouseover="this.style.background='rgba(236,114,128,0.2)'; this.style.transform='scale(1.05)';" onmouseout="this.style.background='rgba(236,114,128,0.05)'; this.style.transform='scale(1)';">
-                        ${ICONS.close}
-                    </button>
+                    <div style="color: #ffffff; font-size: 0.65rem; font-weight: 800; letter-spacing: 4px; text-transform: uppercase; margin-top: 2px; opacity: 0.8; text-align: center;">All Services</div>
                 </div>
             </header>
             <div class="terminal-container">
