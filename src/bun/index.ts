@@ -296,7 +296,13 @@ def get_metrics():
                     total_gpu_sm += gpu_metrics[child]['sm']
             
             prev = last_cpu_time.get(root, total_cpu_time)
-            cpu_percent = (((total_cpu_time - prev) / 3.0) * 100.0) / cores
+            
+            global last_time
+            now = time.time()
+            elapsed = now - last_time
+            if elapsed <= 0.001: elapsed = 3.0
+            
+            cpu_percent = (((total_cpu_time - prev) / elapsed) * 100.0) / cores
             last_cpu_time[root] = total_cpu_time
             results[root] = {"cpu": max(0, cpu_percent), "mem": total_mem, "gpu": total_gpu_sm, "vram": total_gpu_vram}
             
@@ -310,8 +316,10 @@ def get_metrics():
         }
             
         with open(METRICS_FILE, "w") as f: json.dump(results, f)
+        last_time = now
     except Exception: pass
 
+last_time = time.time()
 while True:
     time.sleep(3)
     get_metrics()

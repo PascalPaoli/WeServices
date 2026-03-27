@@ -90,46 +90,45 @@ app.innerHTML = `
         </aside>
         <div id="sidebar-resizer" class="resizer" title="Redimensionner"></div>
         <main class="main-content">
-            <header class="content-header" id="content-header" style="display: none; grid-template-columns: minmax(200px, auto) 1fr auto; gap: 24px; align-items: stretch; padding: 12px 24px;">
-                <div class="header-info" style="display: flex; flex-direction: column; justify-content: center;">
+            <header class="content-header" id="content-header" style="display: none; display: flex; justify-content: space-between; align-items: center; padding: 12px 24px;">
+                <div class="header-info" style="display: flex; flex-direction: column; justify-content: center; min-width: 250px;">
                     <h2 id="current-service-name" style="margin: 0;">Service Name</h2>
                     <div id="current-service-cmd" class="cmd-text" style="margin-top: 4px;"></div>
                 </div>
                 
-                <div id="global-dash" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; padding: 8px 16px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; align-items: center; justify-items: center; text-align: center;">
-                    <div style="display: flex; flex-direction: column; gap: 2px;">
-                        <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">SYS (CPU/GPU)</span>
-                        <span id="dash-sys-proc" style="font-size: 0.85rem; font-weight: 600; font-variant-numeric: tabular-nums;">-- / --</span>
+                <div id="global-dash" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; padding: 8px 24px; display: flex; gap: 32px; align-items: center; justify-content: center;">
+                    <!-- SYS COLUMN -->
+                    <div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
+                        <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">TOTAL SYSTEM</span>
+                        <div id="dash-sys-proc" style="font-size: 1.15rem; font-weight: 800; font-variant-numeric: tabular-nums;">CPU -- | GPU --</div>
+                        <div id="dash-sys-mem" style="font-size: 0.8rem; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--text-secondary);">RAM -- | VRAM --</div>
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 2px;">
-                        <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">SYS (RAM/VRAM)</span>
-                        <span id="dash-sys-mem" style="font-size: 0.85rem; font-weight: 600; font-variant-numeric: tabular-nums;">-- / --</span>
+
+                    <!-- SVCS COLUMN -->
+                    <div style="display: flex; flex-direction: column; gap: 4px; align-items: center; border-left: 1px solid var(--border); padding-left: 32px;">
+                        <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">WESERVICES (ACTIFS)</span>
+                        <div id="dash-svc-proc" style="font-size: 1.15rem; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--accent);">CPU -- | GPU --</div>
+                        <div id="dash-svc-mem" style="font-size: 0.8rem; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--text-secondary);">RAM -- | VRAM --</div>
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 2px; border-left: 1px solid var(--border); padding-left: 12px;">
-                        <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">SVCS (CPU/GPU)</span>
-                        <span id="dash-svc-proc" style="font-size: 0.85rem; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--accent);">-- / --</span>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 2px;">
-                        <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">SVCS (RAM/VRAM)</span>
-                        <span id="dash-svc-mem" style="font-size: 0.85rem; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--accent);">-- / --</span>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 2px; border-left: 1px solid var(--border); padding-left: 12px;">
-                        <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">ACTIVE SVCS</span>
-                        <span id="dash-svc-count" style="font-size: 1rem; font-weight: 700; color: var(--success);">0 / 0</span>
+
+                    <!-- ACTIVE SVCS -->
+                    <div style="display: flex; flex-direction: column; gap: 4px; align-items: center; border-left: 1px solid var(--border); padding-left: 32px;">
+                        <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">SERVICES</span>
+                        <div id="dash-svc-count" style="font-size: 1.4rem; font-weight: 800; color: var(--success);">0 / 0</div>
                     </div>
                 </div>
 
-                <div style="display: flex; align-items: center; gap: 16px;">
-                    <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 8px;">
-                        <div style="color: #ffffff; font-size: 1.15rem; font-weight: 600; letter-spacing: 0.3px; margin-right: 2px;">All Services</div>
-                        <div class="header-actions" style="display: flex; align-items: center; gap: 2px;">
-                            <button class="btn-xxl-icon" id="btn-global-start" title="Start All" style="color: var(--success);">${ICONS.start}</button>
-                            <button class="btn-xxl-icon" id="btn-global-stop" title="Stop All" style="color: var(--danger);">${ICONS.stop}</button>
-                            <button class="btn-xxl-icon" id="btn-cleanup" title="Force Clean Zombies" style="color: var(--warning);">${ICONS.broom || '🧹'}</button>
-                            <div id="global-led" class="led led-red" style="width: 12px; height: 12px; margin-left: 14px;"></div>
+                <div style="display: flex; align-items: stretch; gap: 16px;">
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
+                        <div style="color: #ffffff; font-size: 1.05rem; font-weight: 600; letter-spacing: 0.3px;">All Services</div>
+                        <div class="header-actions" style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 6px; align-items: center; justify-items: center;">
+                            <button class="btn-xxl-icon" id="btn-global-start" title="Start All" style="color: var(--success); padding: 4px;">${ICONS.start}</button>
+                            <button class="btn-xxl-icon" id="btn-cleanup" title="Force Clean Zombies" style="color: var(--warning); padding: 4px;">${ICONS.broom || '🧹'}</button>
+                            <button class="btn-xxl-icon" id="btn-global-stop" title="Stop All" style="color: var(--danger); padding: 4px;">${ICONS.stop}</button>
+                            <div id="global-led" class="led led-red" style="width: 14px; height: 14px; margin: auto;"></div>
                         </div>
                     </div>
-                    <button id="btn-quit-app" title="Quit WeServices Gracefully" style="background: rgba(236,114,128,0.08); border-radius: 12px; color: #ec7280; width: 68px; height: 68px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; border: 2px solid rgba(236,114,128,0.2); cursor: pointer;" onmouseover="this.style.background='rgba(236,114,128,0.2)'; this.style.transform='scale(1.05)';" onmouseout="this.style.background='rgba(236,114,128,0.08)'; this.style.transform='scale(1)';">
+                    <button id="btn-quit-app" title="Quit WeServices Gracefully" style="background: rgba(236,114,128,0.08); border-radius: 12px; color: #ec7280; width: 68px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; border: 2px solid rgba(236,114,128,0.2); cursor: pointer;" onmouseover="this.style.background='rgba(236,114,128,0.2)'; this.style.transform='scale(1.05)';" onmouseout="this.style.background='rgba(236,114,128,0.08)'; this.style.transform='scale(1)';">
                         ${ICONS.close}
                     </button>
                 </div>
@@ -755,6 +754,8 @@ rpc = Electroview.defineRPC<any>({
                                 <span style="font-size: 0.85rem; font-weight: 600; color: #a6accd;">${vramStr}</span>
                             </div>
                         </div>`;
+                    
+                    rawMetricsCache[id] = { cpu, mem, gpu, vram };
                     metricCache[id] = val;
                     const el = document.getElementById(`metrics-${id}`);
                     if (el) el.innerHTML = val;
@@ -823,14 +824,14 @@ rpc = Electroview.defineRPC<any>({
                 const elSvcCount = document.getElementById("dash-svc-count");
 
                 if (elSysProc) {
-                    elSysProc.innerHTML = `${payload.cpu.toFixed(1)}% <span style="opacity:0.5;margin:0 2px;">|</span> ${payload.gpu.toFixed(1)}%`;
+                    elSysProc.innerHTML = `CPU ${payload.cpu.toFixed(1)}% <span style="opacity:0.3;margin:0 6px;">|</span> GPU ${payload.gpu.toFixed(1)}%`;
                 }
                 if (elSysMem) {
-                    const rTot = (payload.mem_tot/1024/1024/1024).toFixed(1);
+                    const rTot = (payload.mem_tot/1024/1024/1024).toFixed(0);
                     const rUse = (payload.mem_used/1024/1024/1024).toFixed(1);
-                    const vTot = (payload.vram_tot/1024/1024/1024).toFixed(1);
+                    const vTot = (payload.vram_tot/1024/1024/1024).toFixed(0);
                     const vUse = (payload.vram_used/1024/1024/1024).toFixed(1);
-                    elSysMem.innerHTML = `${rUse}Gb<span style="opacity:0.5;font-size:0.7em;">/${rTot}</span> <span style="opacity:0.5;margin:0 2px;">|</span> ${vUse}Gb<span style="opacity:0.5;font-size:0.7em;">/${vTot}</span>`;
+                    elSysMem.innerHTML = `RAM ${rUse}Gb<span style="opacity:0.4;font-size:0.8em;">/${rTot}</span> <span style="opacity:0.3;margin:0 6px;">|</span> VRAM ${vUse}Gb<span style="opacity:0.4;font-size:0.8em;">/${vTot}</span>`;
                 }
 
                 // Sum active services
@@ -849,16 +850,16 @@ rpc = Electroview.defineRPC<any>({
                 }
 
                 if (elSvcProc) {
-                    elSvcProc.innerHTML = `${svc_c.toFixed(1)}% <span style="opacity:0.5;margin:0 2px;">|</span> ${svc_g.toFixed(1)}%`;
+                    elSvcProc.innerHTML = `CPU ${svc_c.toFixed(1)}% <span style="opacity:0.3;margin:0 6px;">|</span> GPU ${svc_g.toFixed(1)}%`;
                 }
                 if (elSvcMem) {
                     let sm_gb = (svc_m/1024/1024/1024).toFixed(2);
                     let sv_gb = (svc_v/1024/1024/1024).toFixed(2);
-                    elSvcMem.innerHTML = `${sm_gb}Gb <span style="opacity:0.5;margin:0 2px;">|</span> ${sv_gb}Gb`;
+                    elSvcMem.innerHTML = `RAM ${sm_gb}Gb <span style="opacity:0.3;margin:0 6px;">|</span> VRAM ${sv_gb}Gb`;
                 }
 
                 if (elSvcCount) {
-                    elSvcCount.innerHTML = `${activeCount} <span style="opacity:0.4;font-size:0.8em;">/ ${servicesList.length}</span>`;
+                    elSvcCount.innerHTML = `${activeCount} <span style="opacity:0.6;font-size:0.8em;">/ ${servicesList.length}</span>`;
                 }
             },
             serviceClearLog: ({ id }: { id: string }) => {
