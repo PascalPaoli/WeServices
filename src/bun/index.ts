@@ -244,7 +244,7 @@ def get_metrics():
 
     try:
         proc = subprocess.Popen(["powershell", "-NoProfile", "-Command", ps_cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=0x08000000, encoding="utf-8")
-        out, _ = proc.communicate(timeout=5)
+        out, _ = proc.communicate(timeout=15)
         out_str = out.strip() if out else ""
         cores = os.cpu_count() or 1
         
