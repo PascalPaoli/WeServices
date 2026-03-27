@@ -644,7 +644,7 @@ let activeApiServer: any = null;
     try {
         activeApiServer = Bun.serve({
             port: WEAI_API_PORT,
-            fetch(req) {
+            async fetch(req) {
                 const url = new URL(req.url);
                 
                 if (req.method === "OPTIONS") {
@@ -691,20 +691,20 @@ let activeApiServer: any = null;
                     }
                     const matchStart = url.pathname.match(/^\/api\/services\/(.+)\/start$/);
                     if (matchStart) {
-                        startService(matchStart[1]);
-                        return json({ success: true, action: "start", id: matchStart[1] });
+                        const result = await startService(matchStart[1]);
+                        return json({ success: result.success, action: "start", id: matchStart[1], error: result.error });
                     }
                     const matchStop = url.pathname.match(/^\/api\/services\/(.+)\/stop$/);
                     if (matchStop) {
-                        stopService(matchStop[1]);
-                        return json({ success: true, action: "stop", id: matchStop[1] });
+                        const result = await stopService(matchStop[1]);
+                        return json({ success: result.success, action: "stop", id: matchStop[1], error: result.error });
                     }
                     const matchRestart = url.pathname.match(/^\/api\/services\/(.+)\/restart$/);
                     if (matchRestart) {
-                        stopService(matchRestart[1]).then(() => {
-                            setTimeout(() => startService(matchRestart[1]), 500);
-                        });
-                        return json({ success: true, action: "restart", id: matchRestart[1] });
+                        await stopService(matchRestart[1]);
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        const result = await startService(matchRestart[1]);
+                        return json({ success: result.success, action: "restart", id: matchRestart[1], error: result.error });
                     }
                 }
                 return new Response("Not Found", { status: 404, headers });
