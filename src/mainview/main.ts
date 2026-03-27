@@ -96,9 +96,9 @@ app.innerHTML = `
                     <div id="current-service-cmd" class="cmd-text" style="margin-top: 4px;"></div>
                 </div>
                 
-                <div id="global-dash" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 24px; display: flex; gap: 32px; align-items: center; justify-content: center;">
+                <div id="global-dash" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; padding: 12px; display: flex; gap: 16px; align-items: center; justify-content: center;">
                     
-                    <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 4px 24px; align-items: center; text-align: center; min-width: 250px;">
+                    <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 4px 16px; align-items: center; text-align: center; min-width: 230px;">
                         <!-- Headers -->
                         <div style="grid-column: 1; font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; padding-bottom: 2px;">CPU / RAM</div>
                         <div style="grid-column: 2;"></div>
@@ -112,7 +112,7 @@ app.innerHTML = `
                             <span id="dash-sys-cpu" style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums;">--%</span>
                             <span id="dash-sys-ram" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); font-variant-numeric: tabular-nums;">--Gb</span>
                         </div>
-                        <div style="grid-column: 2; font-weight: 900; font-size: 0.85rem; color: #ffffff; letter-spacing: 1px;">PC</div>
+                        <div style="grid-column: 2; font-weight: 900; font-size: 0.85rem; color: var(--text-primary); letter-spacing: 1px;">PC</div>
                         <div style="grid-column: 3; display: flex; flex-direction: column; gap: 2px;">
                             <span id="dash-sys-gpu" style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums;">--%</span>
                             <span id="dash-sys-vram" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); font-variant-numeric: tabular-nums;">--Gb</span>
@@ -134,9 +134,13 @@ app.innerHTML = `
                     </div>
 
                     <!-- ACTIVE SVCS -->
-                    <div style="display: flex; flex-direction: column; gap: 4px; align-items: center; border-left: 1px solid rgba(255,255,255,0.05); padding-left: 32px; height: 60px; justify-content: center;">
+                    <div style="display: flex; flex-direction: column; gap: 4px; align-items: center; border-left: 1px solid rgba(255,255,255,0.05); padding-left: 16px; height: 60px; justify-content: center;">
                         <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">SERVICES</span>
-                        <div id="dash-svc-count" style="font-size: 1.4rem; font-weight: 800; color: var(--success); font-variant-numeric: tabular-nums;">0 / 0</div>
+                        <div id="dash-svc-count" style="display: flex; flex-direction: column; align-items: center; gap: 2px; font-variant-numeric: tabular-nums;">
+                            <span id="dash-svc-active" style="font-size: 1.1rem; font-weight: 800; color: var(--success); line-height: 1;">0</span>
+                            <div style="width: 100%; height: 2px; background: rgba(255,255,255,0.15); margin: 0;"></div>
+                            <span id="dash-svc-total" style="font-size: 0.9rem; font-weight: 700; color: var(--text-secondary); line-height: 1;">0</span>
+                        </div>
                     </div>
                 </div>
 
@@ -148,7 +152,7 @@ app.innerHTML = `
                             <button class="btn-xxl-icon" id="btn-global-stop" title="Stop All" style="color: var(--danger); padding: 2px;">${ICONS.stop}</button>
                             <div id="global-led" class="led led-red" style="width: 14px; height: 14px; margin: auto;"></div>
                         </div>
-                        <div style="color: #ffffff; font-size: 0.65rem; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-top: 4px; opacity: 0.8;">AllServices</div>
+                        <div style="color: #ffffff; font-size: 0.65rem; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-top: 4px; opacity: 0.8;">All Services</div>
                     </div>
                     <button id="btn-quit-app" title="Quit WeServices" style="background: rgba(236,114,128,0.05); border-radius: 12px; color: #ec7280; width: 62px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; border: 2px solid rgba(236,114,128,0.15); cursor: pointer;" onmouseover="this.style.background='rgba(236,114,128,0.2)'; this.style.transform='scale(1.05)';" onmouseout="this.style.background='rgba(236,114,128,0.05)'; this.style.transform='scale(1)';">
                         ${ICONS.close}
@@ -849,7 +853,8 @@ rpc = Electroview.defineRPC<any>({
                 const elSvcGpu = document.getElementById("dash-svc-gpu");
                 const elSvcVram = document.getElementById("dash-svc-vram");
                 
-                const elSvcCount = document.getElementById("dash-svc-count");
+                const elSvcActive = document.getElementById("dash-svc-active");
+                const elSvcTotal = document.getElementById("dash-svc-total");
 
                 if (elSysCpu) elSysCpu.innerHTML = `${payload.cpu.toFixed(1)}%`;
                 if (elSysGpu) elSysGpu.innerHTML = `${payload.gpu.toFixed(1)}%`;
@@ -892,9 +897,8 @@ rpc = Electroview.defineRPC<any>({
                     elSvcVram.innerHTML = `${sv_gb}Gb`;
                 }
 
-                if (elSvcCount) {
-                    elSvcCount.innerHTML = `${activeCount} <span style="opacity:0.6;font-size:0.8em;">/ ${servicesList.length}</span>`;
-                }
+                if (elSvcActive) elSvcActive.innerHTML = `${activeCount}`;
+                if (elSvcTotal) elSvcTotal.innerHTML = `${servicesList.length}`;
             },
             serviceClearLog: ({ id }: { id: string }) => {
                 logs[id] = "";
